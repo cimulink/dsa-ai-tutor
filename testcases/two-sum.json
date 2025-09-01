@@ -1,0 +1,42 @@
+[
+  {
+    "input": {
+      "nums": [2, 7, 11, 15],
+      "target": 9
+    },
+    "expected": [0, 1],
+    "description": "Basic case with solution at beginning"
+  },
+  {
+    "input": {
+      "nums": [3, 2, 4],
+      "target": 6
+    },
+    "expected": [1, 2],
+    "description": "Solution not at beginning"
+  },
+  {
+    "input": {
+      "nums": [3, 3],
+      "target": 6
+    },
+    "expected": [0, 1],
+    "description": "Duplicate numbers"
+  },
+  {
+    "input": {
+      "nums": [1, 5, 3, 7, 9],
+      "target": 12
+    },
+    "expected": [2, 4],
+    "description": "Solution in middle positions"
+  },
+  {
+    "input": {
+      "nums": [10, 20, 30, 40],
+      "target": 70
+    },
+    "expected": [2, 3],
+    "description": "Larger numbers"
+  }
+]

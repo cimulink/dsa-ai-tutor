@@ -8,54 +8,13 @@ import { Input } from '@/components/ui/input';
 import { Badge } from '@/components/ui/badge';
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
+import { S3ClientService } from '@/lib/s3-client';
+import { Problem, Topic, UserProgress } from '@/types/problem';
+import { isProblemCompleted, getTopicProgressPercentage } from '@/lib/progress-tracking';
 
 // =====================================
-// DUMMY DATA DEFINITIONS
+// DUMMY DATA DEFINITIONS (fallback)
 // =====================================
-
-// Mock problem data structure
-interface Problem {
-  id: string;
-  title: string;
-  difficulty: 'Easy' | 'Medium' | 'Hard';
-  description: string;
-  completed: boolean;
-  inProgress?: boolean;
-  lastAttempt?: string;
-  topic: string;
-  timeEstimate?: string;
-  companies?: string[];
-}
-
-// Mock topic data structure
-interface Topic {
-  id: string;
-  name: string;
-  count: number;
-  completed: number;
-  icon: string;
-  active?: boolean;
-  color: string;
-  description: string;
-}
-
-// Mock user progress data
-interface UserProgress {
-  overall: {
-    problemsSolved: number;
-    totalProblems: number;
-    currentStreak: number;
-  };
-  lastWorkedOn: {
-    title: string;
-    topic: string;
-    timeAgo: string;
-  };
-  weeklyGoal: {
-    target: number;
-    completed: number;
-  };
-}
 
 // Enhanced dummy data for problems
 const mockProblems: Problem[] = [
@@ -65,10 +24,13 @@ const mockProblems: Problem[] = [
     difficulty: "Easy",
     description: "Find two numbers that add to target",
     completed: true,
-    lastAttempt: "2 days ago",
     topic: "arrays",
     timeEstimate: "15 min",
-    companies: ["Google", "Facebook"]
+    companies: ["Google", "Facebook"],
+    examples: [],
+    constraints: [],
+    starterCode: "",
+    hints: []
   },
   {
     id: "merge-intervals",
@@ -76,10 +38,13 @@ const mockProblems: Problem[] = [
     difficulty: "Medium", 
     description: "Combine overlapping intervals",
     completed: false,
-    inProgress: true,
     topic: "arrays",
     timeEstimate: "25 min",
-    companies: ["Microsoft", "Amazon"]
+    companies: ["Microsoft", "Amazon"],
+    examples: [],
+    constraints: [],
+    starterCode: "",
+    hints: []
   },
   {
     id: "maximum-subarray",
@@ -89,7 +54,11 @@ const mockProblems: Problem[] = [
     completed: false,
     topic: "arrays",
     timeEstimate: "35 min",
-    companies: ["Netflix", "Apple"]
+    companies: ["Netflix", "Apple"],
+    examples: [],
+    constraints: [],
+    starterCode: "",
+    hints: []
   },
   {
     id: "valid-parentheses",
@@ -99,7 +68,11 @@ const mockProblems: Problem[] = [
     completed: false,
     topic: "strings",
     timeEstimate: "20 min",
-    companies: ["Uber", "Airbnb"]
+    companies: ["Uber", "Airbnb"],
+    examples: [],
+    constraints: [],
+    starterCode: "",
+    hints: []
   },
   {
     id: "longest-substring",
@@ -109,7 +82,11 @@ const mockProblems: Problem[] = [
     completed: false,
     topic: "strings",
     timeEstimate: "30 min",
-    companies: ["LinkedIn", "Tesla"]
+    companies: ["LinkedIn", "Tesla"],
+    examples: [],
+    constraints: [],
+    starterCode: "",
+    hints: []
   },
   {
     id: "group-anagrams",
@@ -119,7 +96,11 @@ const mockProblems: Problem[] = [
     completed: false,
     topic: "hashmaps",
     timeEstimate: "25 min",
-    companies: ["Spotify", "Dropbox"]
+    companies: ["Spotify", "Dropbox"],
+    examples: [],
+    constraints: [],
+    starterCode: "",
+    hints: []
   }
 ];
 
@@ -131,7 +112,6 @@ const mockTopics: Topic[] = [
     count: 15, 
     completed: 2, 
     icon: "📊", 
-    active: true, 
     color: "from-blue-400 to-blue-600",
     description: "Linear data structures with indexed elements"
   },
@@ -178,17 +158,18 @@ const mockUserProgress: UserProgress = {
   overall: {
     problemsSolved: 12,
     totalProblems: 50,
-    currentStreak: 3
+    currentStreak: 3,
+    longestStreak: 7
   },
-  lastWorkedOn: {
-    title: "Two Sum",
-    topic: "Arrays",
-    timeAgo: "2 days ago"
+  topics: {
+    arrays: { completed: 2, total: 15, percentage: 13 },
+    strings: { completed: 0, total: 12, percentage: 0 },
+    hashmaps: { completed: 0, total: 10, percentage: 0 }
   },
-  weeklyGoal: {
-    target: 5,
-    completed: 3
-  }
+  recentActivity: [
+    { problemId: "two-sum", date: "2024-01-15", status: "completed" },
+    { problemId: "reverse-string", date: "2024-01-14", status: "attempted" }
+  ]
 };
 
 // =====================================
@@ -268,10 +249,10 @@ const WelcomeMessage: React.FC<{ userProgress: UserProgress }> = ({ userProgress
             </h1>
             <p className="text-gray-600 flex items-center">
               <Clock size={16} className="mr-2" />
-              Last worked on: <span className="font-medium ml-1">{userProgress.lastWorkedOn.title}</span> 
+              Last worked on: <span className="font-medium ml-1">Two Sum</span> 
               <span className="text-muted-foreground mx-1">in</span> 
-              <span className="font-medium">{userProgress.lastWorkedOn.topic}</span> 
-              <span className="text-muted-foreground ml-1">• {userProgress.lastWorkedOn.timeAgo}</span>
+              <span className="font-medium">Arrays</span> 
+              <span className="text-muted-foreground ml-1">• 2 days ago</span>
             </p>
           </div>
           <div className="flex space-x-6">
@@ -280,7 +261,7 @@ const WelcomeMessage: React.FC<{ userProgress: UserProgress }> = ({ userProgress
               <div className="text-sm text-muted-foreground">Day Streak 🔥</div>
             </div>
             <div className="text-center">
-              <div className="text-2xl font-bold text-green-600">{userProgress.weeklyGoal.completed}/{userProgress.weeklyGoal.target}</div>
+              <div className="text-2xl font-bold text-green-600">3/5</div>
               <div className="text-sm text-muted-foreground">Weekly Goal 🎯</div>
             </div>
             <div className="text-center">
@@ -299,7 +280,8 @@ const TopicNavigation: React.FC<{
   topics: Topic[];
   activeTopic: string;
   onTopicSelect: (topicId: string) => void;
-}> = ({ topics, activeTopic, onTopicSelect }) => {
+  topicProgress: Record<string, number>;
+}> = ({ topics, activeTopic, onTopicSelect, topicProgress }) => {
   return (
     <div className="bg-white border-b">
       <div className="max-w-7xl mx-auto px-6 py-6">
@@ -308,40 +290,45 @@ const TopicNavigation: React.FC<{
           Choose Your Focus Area
         </h2>
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-5 gap-4">
-          {topics.map((topic) => (
-            <Card
-              key={topic.id}
-              className={`cursor-pointer transition-all duration-200 hover:scale-105 hover:shadow-lg ${
-                activeTopic === topic.id 
-                  ? 'ring-2 ring-blue-500 shadow-lg' 
-                  : 'hover:shadow-md'
-              }`}
-              onClick={() => onTopicSelect(topic.id)}
-            >
-              <CardContent className="p-4">
-                <div className={`w-full h-2 rounded-full bg-gradient-to-r ${topic.color} mb-3`} />
-                <div className="text-center">
-                  <div className="text-3xl mb-2">{topic.icon}</div>
-                  <h3 className="font-semibold text-gray-900 mb-1">{topic.name}</h3>
-                  <p className="text-xs text-muted-foreground mb-2 leading-relaxed">{topic.description}</p>
-                  <div className="flex justify-between text-xs text-muted-foreground">
-                    <span>{topic.count} problems</span>
-                    <span>{topic.completed} solved</span>
-                  </div>
-                  {topic.completed > 0 && (
-                    <div className="mt-2">
-                      <div className="w-full bg-gray-200 rounded-full h-1.5">
-                        <div 
-                          className={`h-1.5 rounded-full bg-gradient-to-r ${topic.color}`}
-                          style={{ width: `${(topic.completed / topic.count) * 100}%` }}
-                        />
-                      </div>
+          {topics.map((topic) => {
+            const progressPercentage = topicProgress[topic.id] || 0;
+            const completedCount = Math.round((progressPercentage / 100) * topic.count);
+            
+            return (
+              <Card
+                key={topic.id}
+                className={`cursor-pointer transition-all duration-200 hover:scale-105 hover:shadow-lg ${
+                  activeTopic === topic.id 
+                    ? 'ring-2 ring-blue-500 shadow-lg' 
+                    : 'hover:shadow-md'
+                }`}
+                onClick={() => onTopicSelect(topic.id)}
+              >
+                <CardContent className="p-4">
+                  <div className={`w-full h-2 rounded-full bg-gradient-to-r ${topic.color} mb-3`} />
+                  <div className="text-center">
+                    <div className="text-3xl mb-2">{topic.icon}</div>
+                    <h3 className="font-semibold text-gray-900 mb-1">{topic.name}</h3>
+                    <p className="text-xs text-muted-foreground mb-2 leading-relaxed">{topic.description}</p>
+                    <div className="flex justify-between text-xs text-muted-foreground">
+                      <span>{topic.count} problems</span>
+                      <span>{completedCount} solved</span>
                     </div>
-                  )}
-                </div>
-              </CardContent>
-            </Card>
-          ))}
+                    {completedCount > 0 && (
+                      <div className="mt-2">
+                        <div className="w-full bg-gray-200 rounded-full h-1.5">
+                          <div 
+                            className={`h-1.5 rounded-full bg-gradient-to-r ${topic.color}`}
+                            style={{ width: `${progressPercentage}%` }}
+                          />
+                        </div>
+                      </div>
+                    )}
+                  </div>
+                </CardContent>
+              </Card>
+            );
+          })}
         </div>
       </div>
     </div>
@@ -355,22 +342,19 @@ const ProblemCard: React.FC<{
   onContinueProblem: (problemId: string) => void;
   onStartFresh: (problemId: string) => void;
 }> = ({ problem, onStartProblem, onContinueProblem, onStartFresh }) => {
+  const isCompleted = isProblemCompleted(problem.id);
+  
   return (
     <Card className="hover:shadow-xl transition-all duration-300 group border-0 shadow-md">
       <CardContent className="p-6">
         <div className="flex items-start justify-between mb-4">
           <div className="flex items-start space-x-4 flex-1">
-            {problem.completed && (
+            {isCompleted && (
               <div className="w-10 h-10 bg-green-100 rounded-full flex items-center justify-center mt-1">
                 <CheckCircle className="text-green-600" size={20} />
               </div>
             )}
-            {problem.inProgress && !problem.completed && (
-              <div className="w-10 h-10 bg-blue-100 rounded-full flex items-center justify-center mt-1">
-                <div className="w-4 h-4 bg-blue-500 rounded-full animate-pulse" />
-              </div>
-            )}
-            {!problem.completed && !problem.inProgress && (
+            {!isCompleted && (
               <div className="w-10 h-10 bg-gray-100 rounded-full flex items-center justify-center mt-1 group-hover:bg-blue-100 transition-colors">
                 <Play className="text-gray-500 group-hover:text-blue-600" size={20} />
               </div>
@@ -393,7 +377,7 @@ const ProblemCard: React.FC<{
                 )}
               </div>
               
-              {problem.companies && (
+              {problem.companies && problem.companies.length > 0 && (
                 <div className="flex items-center text-sm text-gray-500 mb-4">
                   <span className="mr-2">🏢</span>
                   <span className="font-medium">Asked by:</span>
@@ -401,33 +385,16 @@ const ProblemCard: React.FC<{
                   {problem.companies.length > 3 && <span className="text-blue-600 ml-1">+{problem.companies.length - 3} more</span>}
                 </div>
               )}
-              
-              {problem.lastAttempt && (
-                <p className="text-sm text-gray-500 mb-4 flex items-center bg-gray-50 px-3 py-2 rounded-lg">
-                  <Clock size={14} className="mr-2" />
-                  Last attempt: {problem.lastAttempt}
-                </p>
-              )}
             </div>
           </div>
         </div>
         
         <div className="flex space-x-3">
-          {problem.completed ? (
+          {isCompleted ? (
             <Button variant="outline" onClick={() => onStartFresh(problem.id)} className="flex-1 h-12">
               <RotateCcw size={18} className="mr-2" />
               Solve Again
             </Button>
-          ) : problem.inProgress ? (
-            <>
-              <Button onClick={() => onContinueProblem(problem.id)} className="flex-1 h-12">
-                <ChevronRight size={18} className="mr-2" />
-                Continue
-              </Button>
-              <Button variant="outline" onClick={() => onStartFresh(problem.id)} className="h-12">
-                Start Fresh
-              </Button>
-            </>
           ) : (
             <Button onClick={() => onStartProblem(problem.id)} className="flex-1 h-12">
               <Play size={18} className="mr-2" />
@@ -440,80 +407,6 @@ const ProblemCard: React.FC<{
   );
 };
 
-// Enhanced Progress bar component
-const ProgressBar: React.FC<{ 
-  label: string;
-  current: number;
-  total: number;
-  className?: string;
-  color?: string;
-}> = ({ label, current, total, className = "", color = "bg-blue-600" }) => {
-  const percentage = Math.round((current / total) * 100);
-  
-  return (
-    <div className={`space-y-3 ${className}`}>
-      <div className="flex justify-between items-center">
-        <span className="text-sm font-medium text-gray-700">{label}</span>
-        <span className="text-sm font-bold text-gray-900">{current}/{total}</span>
-      </div>
-      <div className="w-full bg-gray-200 rounded-full h-3 overflow-hidden">
-        <div 
-          className={`h-3 rounded-full transition-all duration-500 ease-out ${color}`}
-          style={{ width: `${percentage}%` }}
-        />
-      </div>
-      <div className="flex justify-between text-xs text-muted-foreground">
-        <span>{percentage}% Complete</span>
-        <span>{total - current} remaining</span>
-      </div>
-    </div>
-  );
-};
-
-// Enhanced Quick access component
-const QuickAccess: React.FC<{ 
-  onLearnConcepts: () => void;
-  onRandomChallenge: () => void;
-}> = ({ onLearnConcepts, onRandomChallenge }) => {
-  return (
-    <div className="bg-gray-50 border-t">
-      <div className="max-w-7xl mx-auto px-6 py-8">
-        <h3 className="text-xl font-bold text-gray-900 mb-6 flex items-center">
-          <Zap size={24} className="mr-3 text-orange-500" />
-          Quick Actions
-        </h3>
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-          <Card className="hover:shadow-lg transition-all duration-300 cursor-pointer border-0 shadow-md" onClick={onLearnConcepts}>
-            <CardContent className="p-6 text-center">
-              <div className="w-16 h-16 bg-gradient-to-r from-purple-500 to-purple-600 rounded-2xl flex items-center justify-center mx-auto mb-4">
-                <Brain size={32} className="text-white" />
-              </div>
-              <h4 className="text-lg font-bold text-gray-900 mb-2">Learn Concepts</h4>
-              <p className="text-gray-600 mb-4">Master the fundamentals with AI-powered explanations</p>
-              <Button variant="outline" className="w-full">
-                Start Learning
-              </Button>
-            </CardContent>
-          </Card>
-          
-          <Card className="hover:shadow-lg transition-all duration-300 cursor-pointer border-0 shadow-md" onClick={onRandomChallenge}>
-            <CardContent className="p-6 text-center">
-              <div className="w-16 h-16 bg-gradient-to-r from-orange-500 to-orange-600 rounded-2xl flex items-center justify-center mx-auto mb-4">
-                <Zap size={32} className="text-white" />
-              </div>
-              <h4 className="text-lg font-bold text-gray-900 mb-2">Random Challenge</h4>
-              <p className="text-gray-600 mb-4">Test your skills with a surprise problem</p>
-              <Button variant="outline" className="w-full">
-                Take Challenge
-              </Button>
-            </CardContent>
-          </Card>
-        </div>
-      </div>
-    </div>
-  );
-};
-
 // =====================================
 // MAIN PROBLEM BROWSER COMPONENT
 // =====================================
@@ -521,17 +414,93 @@ const QuickAccess: React.FC<{
 export default function ProblemBrowser() {
   const [searchTerm, setSearchTerm] = useState('');
   const [activeTopic, setActiveTopic] = useState('arrays');
-  const [filteredProblems, setFilteredProblems] = useState<Problem[]>(mockProblems);
+  const [filteredProblems, setFilteredProblems] = useState<Problem[]>([]);
+  const [topics, setTopics] = useState<Topic[]>(mockTopics);
+  const [userProgress, setUserProgress] = useState<UserProgress>(mockUserProgress);
+  const [topicProgress, setTopicProgress] = useState<Record<string, number>>({});
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
   const router = useRouter();
+  
+  // Fetch topics and user progress on component mount
+  useEffect(() => {
+    const fetchData = async () => {
+      try {
+        setLoading(true);
+        setError(null);
+        
+        // Try to fetch from S3 first
+        try {
+          const [fetchedTopics, fetchedUserProgress] = await Promise.all([
+            S3ClientService.getAllTopics(),
+            S3ClientService.getUserProgress()
+          ]);
+          
+          setTopics(fetchedTopics);
+          setUserProgress(fetchedUserProgress);
+          
+          // Calculate topic progress percentages
+          const progress: Record<string, number> = {};
+          fetchedTopics.forEach(topic => {
+            progress[topic.id] = getTopicProgressPercentage(topic.id);
+          });
+          setTopicProgress(progress);
+        } catch (s3Error) {
+          // Fallback to mock data if S3 fails
+          console.warn('Failed to fetch from S3, using mock data:', s3Error);
+          setTopics(mockTopics);
+          setUserProgress(mockUserProgress);
+          
+          // Calculate topic progress percentages from mock data
+          const progress: Record<string, number> = {};
+          mockTopics.forEach(topic => {
+            progress[topic.id] = topic.completed ? (topic.completed / topic.count) * 100 : 0;
+          });
+          setTopicProgress(progress);
+        }
+      } catch (error) {
+        console.error('Error fetching data:', error);
+        setError(error instanceof Error ? error.message : 'Failed to load data');
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    fetchData();
+  }, []);
+
   // Filter problems based on search term and active topic
   useEffect(() => {
-    const filtered = mockProblems.filter(problem => 
-      problem.topic === activeTopic && 
-      (problem.title.toLowerCase().includes(searchTerm.toLowerCase()) || 
-       problem.description.toLowerCase().includes(searchTerm.toLowerCase()))
-    );
-    setFilteredProblems(filtered);
-  }, [searchTerm, activeTopic]);
+    const filterProblems = async () => {
+      try {
+        // Try to fetch problems for the active topic from S3
+        try {
+          const fetchedProblems = await S3ClientService.getProblemsByTopic(activeTopic);
+          const filtered = fetchedProblems.filter(problem => 
+            problem.title.toLowerCase().includes(searchTerm.toLowerCase()) || 
+            problem.description.toLowerCase().includes(searchTerm.toLowerCase())
+          );
+          setFilteredProblems(filtered);
+        } catch (s3Error) {
+          // Fallback to mock data if S3 fails
+          console.warn('Failed to fetch problems from S3, using mock data:', s3Error);
+          const filtered = mockProblems.filter(problem => 
+            problem.topic === activeTopic && 
+            (problem.title.toLowerCase().includes(searchTerm.toLowerCase()) || 
+             problem.description.toLowerCase().includes(searchTerm.toLowerCase()))
+          );
+          setFilteredProblems(filtered);
+        }
+      } catch (error) {
+        console.error('Error filtering problems:', error);
+        setError(error instanceof Error ? error.message : 'Failed to filter problems');
+      }
+    };
+
+    if (!loading) {
+      filterProblems();
+    }
+  }, [searchTerm, activeTopic, loading]);
 
   const handleTopicSelect = (topicId: string) => {
     setActiveTopic(topicId);
@@ -557,23 +526,50 @@ export default function ProblemBrowser() {
     router.push(`/problem/${problemId}`);
   };
 
+  if (loading) {
+    return (
+      <div className="min-h-screen bg-gray-100 flex items-center justify-center">
+        <div className="text-center">
+          <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-600 mx-auto mb-4"></div>
+          <p className="text-gray-600">Loading problems...</p>
+        </div>
+      </div>
+    );
+  }
+
+  if (error) {
+    return (
+      <div className="min-h-screen bg-gray-100 flex items-center justify-center">
+        <div className="text-center max-w-md">
+          <div className="text-red-500 text-5xl mb-4">⚠️</div>
+          <h2 className="text-2xl font-bold text-gray-900 mb-2">Error Loading Data</h2>
+          <p className="text-gray-600 mb-6">{error}</p>
+          <Button onClick={() => window.location.reload()} variant="default">
+            Retry
+          </Button>
+        </div>
+      </div>
+    );
+  }
+
   return (
     <div className="min-h-screen bg-gray-100">
       <Header 
         onSettingsClick={handleSettingsClick} 
         onLearnModeClick={handleLearnModeClick} 
       />
-      <WelcomeMessage userProgress={mockUserProgress} />
+      <WelcomeMessage userProgress={userProgress} />
       <TopicNavigation 
-        topics={mockTopics} 
+        topics={topics} 
         activeTopic={activeTopic} 
         onTopicSelect={handleTopicSelect} 
+        topicProgress={topicProgress}
       />
       
       <main className="max-w-7xl mx-auto px-6 py-8">
         <div className="flex flex-col md:flex-row md:items-center md:justify-between mb-6 gap-4">
           <h2 className="text-2xl font-bold text-gray-900">
-            {mockTopics.find(t => t.id === activeTopic)?.name} Problems
+            {topics.find(t => t.id === activeTopic)?.name} Problems
           </h2>
           <div className="flex-1 max-w-md">
             <div className="relative">

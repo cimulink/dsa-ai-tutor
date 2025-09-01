@@ -22,7 +22,12 @@ import {
   FileText,
   Bot,
   ChevronDown,
-  ChevronUp
+  ChevronUp,
+  Save,
+  Download,
+  Upload,
+  Zap,
+  BarChart3
 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
@@ -31,35 +36,16 @@ import { Badge } from '@/components/ui/badge';
 import Editor from '@monaco-editor/react';
 import { ChatMessage } from '@/types/chat';
 import { sendOpenRouterMessage, getOpenRouterConfig } from '@/lib/openrouter-client';
+import { S3ClientService } from '@/lib/s3-client';
+import { Problem, TestCase } from '@/types/problem';
+import { executeJavaScriptCode, validateJavaScriptSyntax, analyzePerformance } from '@/lib/code-execution';
+import { markProblemAsCompleted } from '@/lib/progress-tracking';
+import { saveSolution, getSavedSolution, clearSolution } from '@/lib/solution-storage';
+import { TestCaseLogsModal } from '@/components/ui/test-case-logs-modal';
 
 // =====================================
-// DUMMY DATA DEFINITIONS
+// DUMMY DATA DEFINITIONS (for fallback)
 // =====================================
-
-interface Problem {
-  id: string;
-  title: string;
-  difficulty: 'Easy' | 'Medium' | 'Hard';
-  description: string;
-  examples: {
-    input: string;
-    output: string;
-    explanation?: string;
-  }[];
-  constraints: string[];
-  starterCode: string;
-  solution: string;
-  hints: string[];
-  timeEstimate: string;
-  companies: string[];
-  topic: string;
-}
-
-interface TestCase {
-  input: any;
-  expected: any;
-  description: string;
-}
 
 // Mock Problems Database
 const mockProblems: Record<string, Problem> = {
@@ -225,38 +211,6 @@ const getDifficultyColor = (difficulty: string) => {
     case 'Medium': return 'text-yellow-600 bg-yellow-50 border-yellow-200';
     case 'Hard': return 'text-red-600 bg-red-50 border-red-200';
     default: return 'text-gray-600 bg-gray-50 border-gray-200';
-  }
-};
-
-const executeCode = (code: string, testCases: TestCase[]): any[] => {
-  // Mock code execution - in reality, this would run in a sandboxed environment
-  try {
-    // Simple mock execution for demo
-    const results = testCases.map((testCase, index) => {
-      // Simulate test execution
-      const passed = Math.random() > 0.3; // 70% pass rate for demo
-      return {
-        testCase: index + 1,
-        passed,
-        input: JSON.stringify(testCase.input),
-        expected: JSON.stringify(testCase.expected),
-        actual: passed ? JSON.stringify(testCase.expected) : '[]',
-        description: testCase.description,
-        executionTime: `${Math.floor(Math.random() * 50) + 10}ms`
-      };
-    });
-    return results;
-  } catch (error) {
-    return testCases.map((_, index) => ({
-      testCase: index + 1,
-      passed: false,
-      error: 'Runtime Error',
-      input: '',
-      expected: '',
-      actual: '',
-      description: 'Code execution failed',
-      executionTime: '0ms'
-    }));
   }
 };
 
@@ -524,8 +478,10 @@ const CodeEditor: React.FC<{
   onRun: () => void;
   onReset: () => void;
   onSubmit: () => void;
+  onSave: () => void;
+  onLoad: () => void;
   isRunning: boolean;
-}> = ({ code, onChange, onRun, onReset, onSubmit, isRunning }) => {
+}> = ({ code, onChange, onRun, onReset, onSubmit, onSave, onLoad, isRunning }) => {
   return (
     <Card className="border-0 shadow-lg h-full bg-white">
       <CardHeader className="pb-3">
@@ -535,6 +491,14 @@ const CodeEditor: React.FC<{
             Code Editor
           </CardTitle>
           <div className="flex space-x-2">
+            <Button variant="outline" size="sm" onClick={onLoad} className="h-8 text-xs">
+              <Upload size={14} className="mr-1" />
+              Load
+            </Button>
+            <Button variant="outline" size="sm" onClick={onSave} className="h-8 text-xs">
+              <Save size={14} className="mr-1" />
+              Save
+            </Button>
             <Button variant="outline" size="sm" onClick={onReset} className="h-8 text-xs">
               <RotateCcw size={14} className="mr-1" />
               Reset
@@ -621,7 +585,16 @@ const TestResults: React.FC<{
   results: any[];
   isVisible: boolean;
   onShowTerminal: () => void;
-}> = ({ results, isVisible, onShowTerminal }) => {
+  onViewTestCaseLogs: (testCase: any) => void;
+  allTestsPassed: boolean;
+  performanceAnalysis?: {
+    timeComplexity: string;
+    spaceComplexity: string;
+    averageExecutionTime: string;
+    totalTime: string;
+    performanceTips: string[];
+  };
+}> = ({ results, isVisible, onShowTerminal, onViewTestCaseLogs, allTestsPassed, performanceAnalysis }) => {
   if (!isVisible) return null;
 
   const passedTests = results.filter(r => r.passed).length;
@@ -642,7 +615,7 @@ const TestResults: React.FC<{
       </CardHeader>
       <CardContent>
         <div className="flex items-center justify-between mb-3">
-          <Badge variant={passedTests === totalTests ? "default" : "destructive"}>
+          <Badge variant={allTestsPassed ? "default" : "destructive"}>
             {passedTests}/{totalTests} Passed
           </Badge>
         </div>
@@ -658,21 +631,76 @@ const TestResults: React.FC<{
                 <span className="text-sm font-medium">
                   {result.passed ? '✓' : '✗'} Test {result.testCase}
                 </span>
-                <span className="text-xs text-gray-500">{result.executionTime}</span>
+                <div className="flex items-center space-x-2">
+                  <Button 
+                    variant="ghost" 
+                    size="sm" 
+                    className="h-6 px-2 text-xs"
+                    onClick={() => onViewTestCaseLogs(result)}
+                  >
+                    View Logs
+                  </Button>
+                  <span className="text-xs text-gray-500">{result.executionTime}</span>
+                  {result.memoryUsed && result.memoryUsed !== 'N/A' && (
+                    <span className="text-xs text-gray-500">{result.memoryUsed}</span>
+                  )}
+                </div>
               </div>
               <div className="text-xs mt-1 truncate">
                 {result.description}
               </div>
+              {!result.passed && result.error && (
+                <div className="text-xs mt-1 text-red-600">
+                  Error: {result.error}
+                </div>
+              )}
             </div>
           ))}
         </div>
         
-        {passedTests === totalTests && (
+        {/* Performance Analysis Section */}
+        {performanceAnalysis && allTestsPassed && (
+          <div className="mt-4 p-3 bg-blue-50 border border-blue-200 rounded">
+            <div className="flex items-center text-blue-800 mb-2">
+              <BarChart3 className="mr-2" size={16} />
+              <span className="text-sm font-medium">Performance Analysis</span>
+            </div>
+            <div className="grid grid-cols-2 gap-2 text-xs">
+              <div>
+                <span className="font-medium">Time Complexity:</span> {performanceAnalysis.timeComplexity}
+              </div>
+              <div>
+                <span className="font-medium">Space Complexity:</span> {performanceAnalysis.spaceComplexity}
+              </div>
+              <div>
+                <span className="font-medium">Avg. Execution:</span> {performanceAnalysis.averageExecutionTime}
+              </div>
+              <div>
+                <span className="font-medium">Total Time:</span> {performanceAnalysis.totalTime}
+              </div>
+            </div>
+            {performanceAnalysis.performanceTips.length > 0 && (
+              <div className="mt-2">
+                <span className="font-medium text-xs">Optimization Tips:</span>
+                <ul className="list-disc list-inside text-xs mt-1 space-y-1">
+                  {performanceAnalysis.performanceTips.map((tip, index) => (
+                    <li key={index} className="text-blue-700">{tip}</li>
+                  ))}
+                </ul>
+              </div>
+            )}
+          </div>
+        )}
+        
+        {allTestsPassed && (
           <div className="mt-3 p-2 bg-green-100 border border-green-200 rounded">
             <div className="flex items-center text-green-800">
               <CheckCircle2 className="mr-1" size={16} />
               <span className="text-sm font-medium">All tests passed! 🎉</span>
             </div>
+            <p className="text-xs text-green-700 mt-1">
+              Congratulations! You've successfully solved this problem.
+            </p>
           </div>
         )}
       </CardContent>
@@ -689,13 +717,12 @@ export default function ProblemWorkspace() {
   const router = useRouter();
   const problemId = params.id as string;
 
-  // Get problem data
-  const problem = mockProblems[problemId];
-  const testCases = mockTestCases[problemId] || [];
-
   // State management
-  const [code, setCode] = useState(problem?.starterCode || '');
+  const [problem, setProblem] = useState<Problem | null>(null);
+  const [testCases, setTestCases] = useState<TestCase[]>([]);
+  const [code, setCode] = useState('');
   const [testResults, setTestResults] = useState<any[]>([]);
+  const [performanceAnalysis, setPerformanceAnalysis] = useState<any>(null);
   const [showResults, setShowResults] = useState(false);
   const [isRunning, setIsRunning] = useState(false);
   const [consoleLogs, setConsoleLogs] = useState<string[]>([]);
@@ -710,16 +737,115 @@ export default function ProblemWorkspace() {
     }
   ]);
   const [isAILoading, setIsAILoading] = useState(false);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
+  const [allTestsPassed, setAllTestsPassed] = useState(false);
+  const [selectedTestCase, setSelectedTestCase] = useState<any | null>(null);
+
+  // Fetch problem data
+  useEffect(() => {
+    const fetchProblemData = async () => {
+      try {
+        setLoading(true);
+        setError(null);
+        
+        // Try to fetch from S3 first
+        try {
+          const [fetchedProblem, fetchedTestCases] = await Promise.all([
+            S3ClientService.getProblemById(problemId),
+            S3ClientService.getTestCasesByProblemId(problemId)
+          ]);
+          
+          setProblem(fetchedProblem);
+          setTestCases(fetchedTestCases);
+          
+          // Check if there's a saved solution
+          const savedSolution = getSavedSolution(problemId);
+          if (savedSolution) {
+            setCode(savedSolution);
+          } else {
+            setCode(fetchedProblem.starterCode);
+          }
+        } catch (s3Error) {
+          // Fallback to mock data if S3 fails
+          console.warn('Failed to fetch from S3, using mock data:', s3Error);
+          
+          const mockProblem = mockProblems[problemId];
+          const mockTests = mockTestCases[problemId] || [];
+          
+          if (mockProblem) {
+            setProblem(mockProblem);
+            setTestCases(mockTests);
+            
+            // Check if there's a saved solution
+            const savedSolution = getSavedSolution(problemId);
+            if (savedSolution) {
+              setCode(savedSolution);
+            } else {
+              setCode(mockProblem.starterCode);
+            }
+          } else {
+            throw new Error('Problem not found');
+          }
+        }
+      } catch (error) {
+        console.error('Error fetching problem data:', error);
+        setError(error instanceof Error ? error.message : 'Failed to load problem');
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    if (problemId) {
+      fetchProblemData();
+    }
+  }, [problemId]);
 
   // If problem not found, redirect
   useEffect(() => {
-    if (!problem) {
+    if (!loading && !problem && !error) {
       router.push('/');
     }
-  }, [problem, router]);
+  }, [problem, router, loading, error]);
+
+  if (loading) {
+    return (
+      <div className="min-h-screen bg-gray-50 flex items-center justify-center">
+        <div className="text-center">
+          <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-600 mx-auto mb-4"></div>
+          <p className="text-gray-600">Loading problem...</p>
+        </div>
+      </div>
+    );
+  }
+
+  if (error) {
+    return (
+      <div className="min-h-screen bg-gray-50 flex items-center justify-center">
+        <div className="text-center max-w-md">
+          <div className="text-red-500 text-5xl mb-4">⚠️</div>
+          <h2 className="text-2xl font-bold text-gray-900 mb-2">Error Loading Problem</h2>
+          <p className="text-gray-600 mb-6">{error}</p>
+          <Button onClick={() => router.push('/')} variant="default">
+            Back to Problems
+          </Button>
+        </div>
+      </div>
+    );
+  }
 
   if (!problem) {
-    return <div>Problem not found</div>;
+    return (
+      <div className="min-h-screen bg-gray-50 flex items-center justify-center">
+        <div className="text-center">
+          <h2 className="text-2xl font-bold text-gray-900 mb-2">Problem Not Found</h2>
+          <p className="text-gray-600 mb-6">The requested problem could not be found.</p>
+          <Button onClick={() => router.push('/')} variant="default">
+            Back to Problems
+          </Button>
+        </div>
+      </div>
+    );
   }
 
   // Event handlers
@@ -740,26 +866,107 @@ export default function ProblemWorkspace() {
     setIsRunning(true);
     setShowResults(false);
     setShowConsole(true);
+    setAllTestsPassed(false);
+    setPerformanceAnalysis(null);
+    
+    // Validate syntax first
+    const syntaxValidation = validateJavaScriptSyntax(code);
+    if (!syntaxValidation.valid) {
+      setConsoleLogs([`> Syntax Error: ${syntaxValidation.error}`]);
+      setIsRunning(false);
+      setShowResults(true);
+      setTestResults([{
+        testCase: 0,
+        passed: false,
+        error: syntaxValidation.error,
+        input: '',
+        expected: '',
+        actual: '',
+        description: 'Syntax Validation',
+        executionTime: '0ms',
+        logs: []
+      }]);
+      return;
+    }
+    
     setConsoleLogs(['> Running tests...', '> Compiling JavaScript code...']);
     
-    // Simulate test execution delay
-    await new Promise(resolve => setTimeout(resolve, 1500));
-    
-    const results = executeCode(code, testCases);
-    setTestResults(results);
-    setShowResults(true);
-    
-    // Add console logs
-    const passedTests = results.filter(r => r.passed).length;
-    const newLogs = [
-      '> Tests completed!',
-      `> ${passedTests}/${results.length} tests passed`,
-      `> Execution time: ${results.reduce((acc, r) => acc + parseInt(r.executionTime), 0)}ms`,
-      passedTests === results.length ? '> All tests passed! 🎉' : '> Some tests failed. Check the results below.'
-    ];
-    setConsoleLogs(prev => [...prev, ...newLogs]);
-    
-    setIsRunning(false);
+    try {
+      // Execute the code with test cases
+      const results = await executeJavaScriptCode(code, testCases);
+      setTestResults(results);
+      setShowResults(true);
+      
+      // Check if all tests passed
+      const allPassed = results.every(r => r.passed);
+      setAllTestsPassed(allPassed);
+      
+      // If all tests passed, perform performance analysis
+      if (allPassed) {
+        // Mark problem as completed
+        markProblemAsCompleted(problemId, problem.topic);
+        
+        // Perform performance analysis
+        try {
+          const analysis = await analyzePerformance(code, testCases);
+          setPerformanceAnalysis(analysis);
+          
+          // Add performance analysis to console logs
+          const analysisLogs = [
+            '> Performance Analysis Complete',
+            `> Time Complexity: ${analysis.timeComplexity}`,
+            `> Space Complexity: ${analysis.spaceComplexity}`,
+            `> Average Execution Time: ${analysis.averageExecutionTime}`,
+            `> Total Time: ${analysis.totalTime}`
+          ];
+          
+          if (analysis.performanceTips.length > 0) {
+            analysisLogs.push('> Optimization Tips:');
+            analysis.performanceTips.forEach(tip => analysisLogs.push(`  • ${tip}`));
+          }
+          
+          setConsoleLogs(prev => [...prev, ...analysisLogs]);
+        } catch (analysisError) {
+          console.error('Performance analysis failed:', analysisError);
+          setConsoleLogs(prev => [...prev, '> Performance analysis failed']);
+        }
+      }
+      
+      // Collect all console logs
+      const allLogs: string[] = [];
+      results.forEach(result => {
+        if (result.logs && result.logs.length > 0) {
+          allLogs.push(`--- Test ${result.testCase} Logs ---`, ...result.logs);
+        }
+      });
+      
+      // Add console logs
+      const passedTests = results.filter(r => r.passed).length;
+      const newLogs = [
+        '> Tests completed!',
+        `> ${passedTests}/${results.length} tests passed`,
+        ...allLogs,
+        allPassed ? '> All tests passed! 🎉' : '> Some tests failed. Check the results below.'
+      ];
+      setConsoleLogs(prev => [...prev, ...newLogs]);
+    } catch (error) {
+      const errorMessage = error instanceof Error ? error.message : 'Unknown error during test execution';
+      setConsoleLogs(prev => [...prev, `> Error: ${errorMessage}`]);
+      setTestResults([{
+        testCase: 0,
+        passed: false,
+        error: errorMessage,
+        input: '',
+        expected: '',
+        actual: '',
+        description: 'Test Execution',
+        executionTime: '0ms',
+        logs: []
+      }]);
+      setShowResults(true);
+    } finally {
+      setIsRunning(false);
+    }
   };
 
   const handleReset = () => {
@@ -768,10 +975,28 @@ export default function ProblemWorkspace() {
     setTestResults([]);
     setShowConsole(false);
     setConsoleLogs([]);
+    setAllTestsPassed(false);
   };
 
   const handleSubmit = () => {
-    alert('Solution submitted! In a real app, this would save your progress.');
+    // Run tests when submitting
+    handleRunTests();
+  };
+
+  const handleSaveSolution = () => {
+    saveSolution(problemId, code);
+    // Add a temporary message to the console
+    setConsoleLogs(prev => [...prev, '> Solution saved successfully!']);
+  };
+
+  const handleLoadSolution = () => {
+    const savedSolution = getSavedSolution(problemId);
+    if (savedSolution) {
+      setCode(savedSolution);
+      setConsoleLogs(prev => [...prev, '> Solution loaded successfully!']);
+    } else {
+      setConsoleLogs(prev => [...prev, '> No saved solution found.']);
+    }
   };
 
   const handleSendMessage = async (message: string) => {
@@ -792,12 +1017,12 @@ export default function ProblemWorkspace() {
       if (config) {
         // Use real OpenRouter API
         const aiMessages = [
-          { role: 'user', content: formatProblemContext(problem, code) },
+          { role: 'user' as const, content: formatProblemContext(problem, code) },
           ...messages.map(msg => ({
-            role: msg.type === 'user' ? 'user' : 'assistant',
+            role: msg.type === 'user' ? 'user' as const : 'assistant' as const,
             content: msg.content
           })),
-          { role: 'user', content: message }
+          { role: 'user' as const, content: message }
         ];
       
         const aiResponse = await sendOpenRouterMessage(aiMessages, config);
@@ -880,6 +1105,8 @@ export default function ProblemWorkspace() {
               onRun={handleRunTests}
               onReset={handleReset}
               onSubmit={handleSubmit}
+              onSave={handleSaveSolution}
+              onLoad={handleLoadSolution}
               isRunning={isRunning}
             />
           </div>
@@ -901,6 +1128,9 @@ export default function ProblemWorkspace() {
             results={testResults}
             isVisible={showResults}
             onShowTerminal={() => setShowTerminalView(true)}
+            onViewTestCaseLogs={setSelectedTestCase}
+            allTestsPassed={allTestsPassed}
+            performanceAnalysis={performanceAnalysis}
           />
         </div>
       </div>
@@ -910,6 +1140,12 @@ export default function ProblemWorkspace() {
         logs={consoleLogs}
         isVisible={showTerminalView}
         onClose={() => setShowTerminalView(false)}
+      />
+
+      {/* Test Case Logs Modal */}
+      <TestCaseLogsModal
+        testCase={selectedTestCase}
+        onClose={() => setSelectedTestCase(null)}
       />
 
       {/* Progress Footer */}

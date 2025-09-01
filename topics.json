@@ -1,0 +1,47 @@
+[
+  {
+    "id": "arrays",
+    "name": "Arrays",
+    "count": 15,
+    "completed": 0,
+    "icon": "📊",
+    "color": "from-blue-400 to-blue-600",
+    "description": "Linear data structures with indexed elements"
+  },
+  {
+    "id": "strings",
+    "name": "Strings",
+    "count": 12,
+    "completed": 0,
+    "icon": "📝",
+    "color": "from-green-400 to-green-600",
+    "description": "Text manipulation and pattern matching"
+  },
+  {
+    "id": "hashmaps",
+    "name": "Hash Maps",
+    "count": 10,
+    "completed": 0,
+    "icon": "🗃️",
+    "color": "from-purple-400 to-purple-600",
+    "description": "Key-value data structures for fast lookup"
+  },
+  {
+    "id": "recursion",
+    "name": "Recursion",
+    "count": 6,
+    "completed": 0,
+    "icon": "🔄",
+    "color": "from-orange-400 to-orange-600",
+    "description": "Self-calling functions and divide-conquer"
+  },
+  {
+    "id": "algorithms",
+    "name": "Algorithms",
+    "count": 8,
+    "completed": 0,
+    "icon": "⚡",
+    "color": "from-red-400 to-red-600",
+    "description": "Step-by-step problem solving techniques"
+  }
+]

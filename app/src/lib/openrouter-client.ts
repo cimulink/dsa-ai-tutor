@@ -58,9 +58,10 @@ export const sendOpenRouterMessage = async (
       : [{ role: 'system', content: DEFAULT_SYSTEM_PROMPT }, ...messages];
     
     // Use our proxy API route to avoid CORS issues
-    const response = await fetch('/api/openrouter', {
+    const response = await fetch('https://openrouter.ai/api/v1/chat/completions', {
       method: 'POST',
       headers: {
+        'Authorization': `Bearer ${config.apiKey}`,
         'Content-Type': 'application/json'
       },
       body: JSON.stringify({

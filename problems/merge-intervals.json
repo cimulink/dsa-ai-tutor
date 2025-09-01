@@ -1,0 +1,33 @@
+{
+  "id": "merge-intervals",
+  "title": "Merge Intervals",
+  "difficulty": "Medium",
+  "description": "Given an array of intervals where intervals[i] = [starti, endi], merge all overlapping intervals, and return an array of the non-overlapping intervals that cover all the intervals in the input.",
+  "completed": false,
+  "topic": "arrays",
+  "timeEstimate": "25 min",
+  "companies": ["Microsoft", "Amazon", "Google"],
+  "examples": [
+    {
+      "input": "intervals = [[1,3],[2,6],[8,10],[15,18]]",
+      "output": "[[1,6],[8,10],[15,18]]",
+      "explanation": "Since intervals [1,3] and [2,6] overlap, merge them into [1,6]."
+    },
+    {
+      "input": "intervals = [[1,4],[4,5]]",
+      "output": "[[1,5]]",
+      "explanation": "Intervals [1,4] and [4,5] are considered overlapping."
+    }
+  ],
+  "constraints": [
+    "1 ≤ intervals.length ≤ 10⁴",
+    "intervals[i].length == 2",
+    "0 ≤ starti ≤ endi ≤ 10⁴"
+  ],
+  "starterCode": "function merge(intervals) {\n    // Your code here\n    \n}",
+  "hints": [
+    "Consider sorting the intervals first by their start time.",
+    "Think about when two intervals overlap - when does the start of one interval fall within another?",
+    "You can merge intervals by updating the end time of the previous interval."
+  ]
+}
