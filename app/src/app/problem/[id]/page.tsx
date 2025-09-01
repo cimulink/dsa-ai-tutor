@@ -222,7 +222,13 @@ const formatProblemContext = (problem: Problem, code: string) => {
   return `Problem: ${problem.title}
 Description: ${problem.description}
 Current Code:
-${code}`;
+${code}
+
+Important Instructions:
+1. Always use single backticks (\`) for inline code highlights
+2. Always use triple backticks (\`\`\`) for code blocks
+3. Return all responses in proper format
+4. Be precise and concise in your explanations`;
 };
 
 // Generate a unique key for localStorage based on problem ID
@@ -1172,7 +1178,7 @@ export default function ProblemWorkspace() {
             role: msg.type === 'user' ? 'user' as const : 'assistant' as const,
             content: msg.content
           })),
-          { role: 'user' as const, content: message }
+          { role: 'user' as const, content: `${message}\n\nPlease ensure your response follows these guidelines:\n1. Use single backticks (\`) for inline code highlights\n2. Use triple backticks (\`\`\`) for code blocks\n3. Return all responses in proper format\n4. Be precise and concise in your explanations` }
         ];
       
         const aiResponse = await sendOpenRouterMessage(aiMessages, config);
@@ -1216,7 +1222,7 @@ export default function ProblemWorkspace() {
 
   const handleGetHint = async () => {
     const randomHint = problem.hints[Math.floor(Math.random() * problem.hints.length)];
-    await handleSendMessage("Can you give me a hint?");
+    await handleSendMessage("Can you give me a hint?\n\nPlease ensure your response follows these guidelines:\n1. Use single backticks (`) for inline code highlights\n2. Use triple backticks (```) for code blocks\n3. Return all responses in proper format\n4. Be precise and concise in your explanations");
     
     setTimeout(async () => {
       const hintMessage: ChatMessage = {
