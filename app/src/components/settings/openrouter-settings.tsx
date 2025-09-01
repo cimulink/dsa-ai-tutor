@@ -41,6 +41,12 @@ export function OpenRouterSettings({ onSettingsSaved }: OpenRouterSettingsProps)
       return;
     }
 
+    if (!model.trim()) {
+      setConnectionStatus('error');
+      setStatusMessage('Please enter a model name');
+      return;
+    }
+
     setIsTesting(true);
     setConnectionStatus('idle');
     setStatusMessage('');
@@ -68,6 +74,12 @@ export function OpenRouterSettings({ onSettingsSaved }: OpenRouterSettingsProps)
     if (!apiKey.trim()) {
       setConnectionStatus('error');
       setStatusMessage('Please enter your OpenRouter API key');
+      return;
+    }
+
+    if (!model.trim()) {
+      setConnectionStatus('error');
+      setStatusMessage('Please enter a model name');
       return;
     }
 
@@ -123,32 +135,31 @@ export function OpenRouterSettings({ onSettingsSaved }: OpenRouterSettingsProps)
         </div>
 
         <div className="space-y-2">
-          <Label htmlFor="model">Model</Label>
-          <select
+          <Label htmlFor="model">Model Name</Label>
+          <Input
             id="model"
-            className="w-full p-2 border rounded-md bg-background"
+            type="text"
+            placeholder="e.g., mistralai/mistral-7b-instruct"
             value={model}
             onChange={(e) => setModel(e.target.value)}
-          >
-            <option value="mistralai/mistral-7b-instruct">Mistral 7B Instruct (Free)</option>
-            <option value="google/gemma-7b-it">Google Gemma 7B IT (Free)</option>
-            <option value="meta-llama/llama-3-8b-instruct">Llama 3 8B Instruct (Free)</option>
-            <option value="openchat/openchat-7b">OpenChat 7B (Free)</option>
-            <option value="mistralai/mixtral-8x7b-instruct">Mixtral 8x7B Instruct (Free)</option>
-            <option value="anthropic/claude-3-haiku">Claude 3 Haiku (Paid)</option>
-            <option value="anthropic/claude-3-sonnet">Claude 3 Sonnet (Paid)</option>
-            <option value="openai/gpt-3.5-turbo">GPT-3.5 Turbo (Paid)</option>
-            <option value="openai/gpt-4">GPT-4 (Paid)</option>
-          </select>
+          />
           <p className="text-sm text-muted-foreground">
-            Free models are available without cost. Paid models offer enhanced capabilities.
+            Copy the model name from{' '}
+            <a 
+              href="https://openrouter.ai/models" 
+              target="_blank" 
+              rel="noopener noreferrer"
+              className="text-blue-600 hover:underline"
+            >
+              OpenRouter Models
+            </a>. Free models are available without cost.
           </p>
         </div>
 
         <div className="flex flex-wrap gap-3">
           <Button 
             onClick={handleTestConnection} 
-            disabled={isTesting || !apiKey.trim()}
+            disabled={isTesting || !apiKey.trim() || !model.trim()}
           >
             {isTesting ? 'Testing...' : 'Test Connection'}
           </Button>
@@ -169,9 +180,15 @@ export function OpenRouterSettings({ onSettingsSaved }: OpenRouterSettingsProps)
         )}
 
         <div className="text-sm text-muted-foreground pt-4 border-t">
-          <h4 className="font-medium mb-2">Privacy & Security</h4>
-          <p>
-            Your API key is stored locally in your browser and never sent to any server other than OpenRouter.
+          <h4 className="font-medium mb-2">Popular Free Models</h4>
+          <ul className="list-disc list-inside space-y-1">
+            <li><code className="bg-gray-100 px-1 rounded">mistralai/mistral-7b-instruct</code></li>
+            <li><code className="bg-gray-100 px-1 rounded">google/gemma-7b-it</code></li>
+            <li><code className="bg-gray-100 px-1 rounded">meta-llama/llama-3-8b-instruct</code></li>
+            <li><code className="bg-gray-100 px-1 rounded">openchat/openchat-7b</code></li>
+          </ul>
+          <p className="mt-3">
+            <strong>Privacy & Security:</strong> Your API key is stored locally in your browser and never sent to any server other than OpenRouter.
             You can manage your API keys directly on the{' '}
             <a 
               href="https://openrouter.ai/keys" 

@@ -284,34 +284,34 @@ const ProblemWorkspaceHeader: React.FC<{
   onHelpClick: () => void;
 }> = ({ problem, onBackClick, onSettingsClick, onHelpClick }) => {
   return (
-    <header className="bg-white/95 backdrop-blur-sm border-b shadow-sm sticky top-0 z-50">
-      <div className="px-6 py-4">
+    <header className="bg-white/90 backdrop-blur-sm border-b shadow-sm sticky top-0 z-50">
+      <div className="px-4 py-2">
         <div className="flex items-center justify-between">
-          <div className="flex items-center space-x-4">
-            <Button variant="ghost" size="icon" onClick={onBackClick}>
-              <ArrowLeft size={20} />
+          <div className="flex items-center space-x-3">
+            <Button variant="ghost" size="icon" onClick={onBackClick} className="h-8 w-8">
+              <ArrowLeft size={16} />
             </Button>
             <div>
-              <h1 className="text-xl font-bold text-gray-900">{problem.title}</h1>
-              <div className="flex items-center space-x-2 mt-1">
-                <Badge className={getDifficultyColor(problem.difficulty)}>
+              <h1 className="text-lg font-bold text-gray-900">{problem.title}</h1>
+              <div className="flex items-center space-x-2 mt-0.5">
+                <Badge className={`${getDifficultyColor(problem.difficulty)} text-xs py-0.5`}>
                   {problem.difficulty}
                 </Badge>
-                <span className="text-sm text-gray-500">•</span>
-                <span className="text-sm text-gray-500 flex items-center">
-                  <Clock size={14} className="mr-1" />
+                <span className="text-xs text-gray-500">•</span>
+                <span className="text-xs text-gray-500 flex items-center">
+                  <Clock size={12} className="mr-1" />
                   {problem.timeEstimate}
                 </span>
               </div>
             </div>
           </div>
-          <div className="flex items-center space-x-2">
-            <Button variant="ghost" size="icon" onClick={onHelpClick}>
-              <HelpCircle size={20} />
+          <div className="flex items-center space-x-1">
+            <Button variant="ghost" size="icon" onClick={onHelpClick} className="h-8 w-8">
+              <HelpCircle size={16} />
             </Button>
             <Link href="/settings">
-              <Button variant="ghost" size="icon">
-                <Settings size={20} />
+              <Button variant="ghost" size="icon" className="h-8 w-8">
+                <Settings size={16} />
               </Button>
             </Link>
           </div>
@@ -324,7 +324,7 @@ const ProblemWorkspaceHeader: React.FC<{
 // Problem Description Component (Left Column - Compact)
 const ProblemDescription: React.FC<{ problem: Problem }> = ({ problem }) => {
   return (
-    <Card className="h-full border-0 shadow-lg">
+    <Card className="h-full border-0 shadow-lg bg-white">
       <CardHeader className="pb-3">
         <CardTitle className="flex items-center text-sm font-medium">
           <FileText className="mr-2 text-blue-600" size={16} />
@@ -398,12 +398,12 @@ const ProblemDescription: React.FC<{ problem: Problem }> = ({ problem }) => {
           <h3 className="font-semibold text-gray-900 mb-1 text-xs">Asked by:</h3>
           <div className="flex flex-wrap gap-1">
             {problem.companies.slice(0, 3).map((company, index) => (
-              <Badge key={index} variant="outline" className="text-xs px-1.5 py-0">
+              <Badge key={index} variant="outline" className="text-xs px-1.5 py-0 bg-white">
                 {company}
               </Badge>
             ))}
             {problem.companies.length > 3 && (
-              <Badge variant="outline" className="text-xs px-1.5 py-0">
+              <Badge variant="outline" className="text-xs px-1.5 py-0 bg-white">
                 +{problem.companies.length - 3}
               </Badge>
             )}
@@ -438,7 +438,7 @@ const AIChat: React.FC<{
   };
 
   return (
-    <Card className="h-full border-0 shadow-lg flex flex-col">
+    <Card className="h-full border-0 shadow-lg flex flex-col bg-white">
       <CardHeader className="pb-3 flex-shrink-0">
         <CardTitle className="flex items-center text-base">
           <Bot className="mr-2 text-purple-600" size={18} />
@@ -482,18 +482,18 @@ const AIChat: React.FC<{
           <div className="flex space-x-2 mb-2">
             <Button
               variant="outline"
-              size="xs"
+              size="lg"
               onClick={onGetHint}
-              className="flex items-center"
+              className="flex items-center h-7"
             >
               <Lightbulb size={14} className="mr-1" />
               Hint
             </Button>
             <Button
               variant="outline"
-              size="xs"
+              size="lg"
               onClick={() => onSendMessage("Can you explain this problem?")}
-              className="flex items-center"
+              className="flex items-center h-7"
             >
               <MessageCircle size={14} className="mr-1" />
               Explain
@@ -507,7 +507,7 @@ const AIChat: React.FC<{
               placeholder="Ask a question..."
               className="flex-1 text-xs"
             />
-            <Button size="sm" onClick={handleSend} disabled={!newMessage.trim()}>
+            <Button size="sm" onClick={handleSend} disabled={!newMessage.trim()} className="h-8">
               <Send size={14} />
             </Button>
           </div>
@@ -527,7 +527,7 @@ const CodeEditor: React.FC<{
   isRunning: boolean;
 }> = ({ code, onChange, onRun, onReset, onSubmit, isRunning }) => {
   return (
-    <Card className="border-0 shadow-lg h-full">
+    <Card className="border-0 shadow-lg h-full bg-white">
       <CardHeader className="pb-3">
         <div className="flex items-center justify-between">
           <CardTitle className="flex items-center text-base font-medium">
@@ -535,15 +535,15 @@ const CodeEditor: React.FC<{
             Code Editor
           </CardTitle>
           <div className="flex space-x-2">
-            <Button variant="outline" size="sm" onClick={onReset}>
+            <Button variant="outline" size="sm" onClick={onReset} className="h-8 text-xs">
               <RotateCcw size={14} className="mr-1" />
               Reset
             </Button>
-            <Button variant="outline" size="sm" onClick={onRun} disabled={isRunning}>
+            <Button variant="outline" size="sm" onClick={onRun} disabled={isRunning} className="h-8 text-xs">
               <Play size={14} className="mr-1" />
               {isRunning ? 'Running...' : 'Run'}
             </Button>
-            <Button size="sm" onClick={onSubmit}>
+            <Button size="sm" onClick={onSubmit} className="h-8 text-xs">
               <CheckCircle2 size={14} className="mr-1" />
               Submit
             </Button>
@@ -628,14 +628,14 @@ const TestResults: React.FC<{
   const totalTests = results.length;
 
   return (
-    <Card className="border-0 shadow-lg">
+    <Card className="border-0 shadow-lg bg-white">
       <CardHeader className="pb-3">
         <div className="flex items-center justify-between">
           <CardTitle className="flex items-center text-base">
             <Terminal className="mr-2 text-blue-600" size={18} />
             Test Results
           </CardTitle>
-          <Button variant="outline" size="sm" onClick={onShowTerminal}>
+          <Button variant="outline" size="sm" onClick={onShowTerminal} className="h-8 text-xs">
             View Terminal
           </Button>
         </div>
@@ -865,8 +865,8 @@ export default function ProblemWorkspace() {
       />
 
       {/* Main Content - Full Width 3-Column Layout */}
-      <div className="p-4 w-full">
-        <div className="grid grid-cols-1 lg:grid-cols-12 gap-4 h-[calc(100vh-180px)]">
+      <div className="p-3 w-full">
+        <div className="grid grid-cols-1 lg:grid-cols-12 gap-3 h-[calc(100vh-120px)]">
           {/* Left Column - Problem Description */}
           <div className="lg:col-span-3 h-full">
             <ProblemDescription problem={problem} />
@@ -896,7 +896,7 @@ export default function ProblemWorkspace() {
         </div>
 
         {/* Bottom Section - Test Results */}
-        <div className="mt-4">
+        <div className="mt-3">
           <TestResults
             results={testResults}
             isVisible={showResults}
@@ -913,29 +913,29 @@ export default function ProblemWorkspace() {
       />
 
       {/* Progress Footer */}
-      <div className="mt-4 px-4 pb-4">
-        <Card className="border shadow-sm">
-          <CardContent className="p-3">
-            <div className="flex flex-col sm:flex-row items-center justify-between gap-3">
-              <div className="flex items-center space-x-3">
-                <Button variant="outline" size="sm">
-                  <ChevronLeft size={14} className="mr-1" />
+      <div className="mt-3 px-3 pb-3">
+        <Card className="border shadow-sm bg-white">
+          <CardContent className="p-2">
+            <div className="flex flex-col sm:flex-row items-center justify-between gap-2">
+              <div className="flex items-center space-x-2">
+                <Button variant="outline" size="sm" className="h-7 text-xs">
+                  <ChevronLeft size={12} className="mr-1" />
                   Previous
                 </Button>
-                <span className="text-sm text-gray-600">
+                <span className="text-xs text-gray-600">
                   Problem 1 of 15 • Arrays
                 </span>
-                <Button variant="outline" size="sm">
+                <Button variant="outline" size="sm" className="h-7 text-xs">
                   Next
-                  <ChevronRight size={14} className="ml-1" />
+                  <ChevronRight size={12} className="ml-1" />
                 </Button>
               </div>
-              <div className="flex items-center space-x-3">
-                <span className="text-sm text-gray-600">Progress:</span>
-                <div className="w-24 bg-gray-200 rounded-full h-1.5">
+              <div className="flex items-center space-x-2">
+                <span className="text-xs text-gray-600">Progress:</span>
+                <div className="w-20 bg-gray-200 rounded-full h-1.5">
                   <div className="bg-blue-600 h-1.5 rounded-full" style={{ width: '13%' }}></div>
                 </div>
-                <span className="text-sm font-medium">2/15</span>
+                <span className="text-xs font-medium">2/15</span>
               </div>
             </div>
           </CardContent>

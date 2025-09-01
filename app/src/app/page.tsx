@@ -7,6 +7,7 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/com
 import { Input } from '@/components/ui/input';
 import { Badge } from '@/components/ui/badge';
 import Link from 'next/link';
+import { useRouter } from 'next/navigation';
 
 // =====================================
 // DUMMY DATA DEFINITIONS
@@ -518,216 +519,94 @@ const QuickAccess: React.FC<{
 // =====================================
 
 export default function ProblemBrowser() {
-  // State management for active topic selection
-  const [activeTopic, setActiveTopic] = useState<string>('arrays');
-  
-  // State for search functionality (dummy implementation)
-  const [searchQuery, setSearchQuery] = useState<string>('');
-  
-  // State for tracking user interactions (for demo purposes)
-  const [lastAction, setLastAction] = useState<string>('');
+  const [searchTerm, setSearchTerm] = useState('');
+  const [activeTopic, setActiveTopic] = useState('arrays');
+  const [filteredProblems, setFilteredProblems] = useState<Problem[]>(mockProblems);
+  const router = useRouter();
+  // Filter problems based on search term and active topic
+  useEffect(() => {
+    const filtered = mockProblems.filter(problem => 
+      problem.topic === activeTopic && 
+      (problem.title.toLowerCase().includes(searchTerm.toLowerCase()) || 
+       problem.description.toLowerCase().includes(searchTerm.toLowerCase()))
+    );
+    setFilteredProblems(filtered);
+  }, [searchTerm, activeTopic]);
 
-  // Filter problems based on active topic
-  const filteredProblems = mockProblems.filter(problem => problem.topic === activeTopic);
-  
-  // Get current topic data for progress calculation
-  const currentTopic = mockTopics.find(topic => topic.id === activeTopic);
-  
-  // Calculate topic progress
-  const topicProgress = currentTopic ? {
-    completed: filteredProblems.filter(p => p.completed).length,
-    total: filteredProblems.length
-  } : { completed: 0, total: 0 };
-
-  // Event handlers for user interactions
   const handleTopicSelect = (topicId: string) => {
     setActiveTopic(topicId);
-    setLastAction(`Selected topic: ${mockTopics.find(t => t.id === topicId)?.name}`);
-  };
-
-  const handleStartProblem = (problemId: string) => {
-    const problem = mockProblems.find(p => p.id === problemId);
-    setLastAction(`Started problem: ${problem?.title}`);
-    // Navigate to the problem workspace
-    window.location.href = `/problem/${problemId}`;
-  };
-
-  const handleContinueProblem = (problemId: string) => {
-    const problem = mockProblems.find(p => p.id === problemId);
-    setLastAction(`Continuing problem: ${problem?.title}`);
-    // Navigate to the problem workspace with saved progress
-    window.location.href = `/problem/${problemId}`;
-  };
-
-  const handleStartFresh = (problemId: string) => {
-    const problem = mockProblems.find(p => p.id === problemId);
-    setLastAction(`Starting fresh: ${problem?.title}`);
-    // Navigate to the problem workspace and reset progress
-    window.location.href = `/problem/${problemId}`;
   };
 
   const handleSettingsClick = () => {
-    setLastAction('Opened settings');
-    alert('This would navigate to the Settings page.');
+    console.log('Settings clicked');
   };
 
   const handleLearnModeClick = () => {
-    setLastAction('Opened learn mode');
-    alert('This would navigate to the Learn Mode page.');
+    console.log('Learn mode clicked');
   };
 
-  const handleLearnConcepts = () => {
-    setLastAction('Opened concept learning');
-    alert('This would navigate to the Learn Mode with concept explorer.');
+  const handleStartProblem = (problemId: string) => {
+    router.push(`/problem/${problemId}`);
   };
 
-  const handleRandomChallenge = () => {
-    const randomProblem = mockProblems[Math.floor(Math.random() * mockProblems.length)];
-    setLastAction(`Random challenge: ${randomProblem.title}`);
-    alert(`Random challenge selected: ${randomProblem.title}\n\nThis would navigate directly to this problem.`);
+  const handleContinueProblem = (problemId: string) => {
+    router.push(`/problem/${problemId}`);
   };
 
-  const handleSearch = (query: string) => {
-    setSearchQuery(query);
-    setLastAction(`Searched for: ${query}`);
-    // In a real app, this would filter problems by the search query
+  const handleStartFresh = (problemId: string) => {
+    router.push(`/problem/${problemId}`);
   };
-
-  // Effect to demonstrate state changes (for demo purposes)
-  useEffect(() => {
-    if (lastAction) {
-      console.log('Last action:', lastAction);
-    }
-  }, [lastAction]);
 
   return (
-    <div className="min-h-screen bg-gray-50">
-      {/* Header */}
+    <div className="min-h-screen bg-gray-100">
       <Header 
-        onSettingsClick={handleSettingsClick}
-        onLearnModeClick={handleLearnModeClick}
+        onSettingsClick={handleSettingsClick} 
+        onLearnModeClick={handleLearnModeClick} 
       />
-
-      {/* Welcome Message */}
       <WelcomeMessage userProgress={mockUserProgress} />
-
-      {/* Topic Navigation */}
       <TopicNavigation 
-        topics={mockTopics}
-        activeTopic={activeTopic}
-        onTopicSelect={handleTopicSelect}
+        topics={mockTopics} 
+        activeTopic={activeTopic} 
+        onTopicSelect={handleTopicSelect} 
       />
-
-      {/* Main Content Area */}
-      <div className="max-w-7xl mx-auto px-6 py-8">
-        {/* Search Bar */}
-        <div className="mb-8">
-          <div className="relative max-w-md">
-            <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-muted-foreground" size={20} />
-            <Input
-              type="text"
-              placeholder="Search problems..."
-              value={searchQuery}
-              onChange={(e) => handleSearch(e.target.value)}
-              className="pl-10 h-12 text-base"
-            />
+      
+      <main className="max-w-7xl mx-auto px-6 py-8">
+        <div className="flex flex-col md:flex-row md:items-center md:justify-between mb-6 gap-4">
+          <h2 className="text-2xl font-bold text-gray-900">
+            {mockTopics.find(t => t.id === activeTopic)?.name} Problems
+          </h2>
+          <div className="flex-1 max-w-md">
+            <div className="relative">
+              <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400" size={20} />
+              <Input
+                type="text"
+                placeholder="Search problems..."
+                className="pl-10"
+                value={searchTerm}
+                onChange={(e) => setSearchTerm(e.target.value)}
+              />
+            </div>
           </div>
         </div>
 
-        {/* Problem List Header */}
-        <div className="mb-6">
-          <h2 className="text-2xl font-bold text-gray-900 mb-2 flex items-center">
-            <span className="text-3xl mr-2">{currentTopic?.icon}</span>
-            {currentTopic?.name} Problems
-          </h2>
-          <p className="text-gray-600">
-            {filteredProblems.length} problems available • {topicProgress.completed} completed
-          </p>
-          {searchQuery && (
-            <p className="text-sm text-muted-foreground mt-2">
-              Showing results for "{searchQuery}" (Search functionality is demo only)
-            </p>
-          )}
-        </div>
-
-        {/* Problem Cards */}
-        <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 mb-8">
-          {filteredProblems.map((problem) => (
-            <ProblemCard
-              key={problem.id}
-              problem={problem}
-              onStartProblem={handleStartProblem}
-              onContinueProblem={handleContinueProblem}
-              onStartFresh={handleStartFresh}
-            />
-          ))}
-        </div>
-
-        {/* Progress Section */}
-        <Card className="mb-8 border-0 shadow-lg">
-          <CardHeader className="pb-4">
-            <CardTitle className="text-xl flex items-center">
-              <TrendingUp className="mr-2 text-green-600" size={24} />
-              Your Learning Progress
-            </CardTitle>
-          </CardHeader>
-          <CardContent className="space-y-6">
-            {/* Topic Progress */}
-            <ProgressBar
-              label={`${currentTopic?.name} Progress`}
-              current={topicProgress.completed}
-              total={topicProgress.total}
-              color="bg-gradient-to-r from-blue-500 to-blue-600"
-            />
-            
-            {/* Overall Progress */}
-            <ProgressBar
-              label="Overall Progress"
-              current={mockUserProgress.overall.problemsSolved}
-              total={mockUserProgress.overall.totalProblems}
-              color="bg-gradient-to-r from-green-500 to-green-600"
-            />
-            
-            {/* Achievement Cards */}
-            <div className="grid grid-cols-1 md:grid-cols-3 gap-4 pt-4">
-              <div className="bg-gradient-to-r from-orange-50 to-orange-100 p-4 rounded-xl text-center">
-                <div className="text-3xl font-bold text-orange-600 mb-1">
-                  🔥 {mockUserProgress.overall.currentStreak}
-                </div>
-                <p className="text-sm text-orange-700 font-medium">Day Streak</p>
-                <p className="text-xs text-orange-600">Keep it going!</p>
-              </div>
-              <div className="bg-gradient-to-r from-green-50 to-green-100 p-4 rounded-xl text-center">
-                <div className="text-3xl font-bold text-green-600 mb-1">
-                  🎯 {mockUserProgress.weeklyGoal.completed}/{mockUserProgress.weeklyGoal.target}
-                </div>
-                <p className="text-sm text-green-700 font-medium">Weekly Goal</p>
-                <p className="text-xs text-green-600">Almost there!</p>
-              </div>
-              <div className="bg-gradient-to-r from-purple-50 to-purple-100 p-4 rounded-xl text-center">
-                <div className="text-3xl font-bold text-purple-600 mb-1">
-                  ✨ {mockUserProgress.overall.problemsSolved}
-                </div>
-                <p className="text-sm text-purple-700 font-medium">Total Solved</p>
-                <p className="text-xs text-purple-600">Great progress!</p>
-              </div>
-            </div>
-          </CardContent>
-        </Card>
-      </div>
-
-      {/* Quick Access */}
-      <QuickAccess 
-        onLearnConcepts={handleLearnConcepts}
-        onRandomChallenge={handleRandomChallenge}
-      />
-
-      {/* Demo Action Logger */}
-      {lastAction && (
-        <div className="fixed bottom-4 right-4 bg-primary text-primary-foreground px-4 py-2 rounded-lg shadow-lg">
-          <p className="text-sm">Action: {lastAction}</p>
-        </div>
-      )}
+        {filteredProblems.length === 0 ? (
+          <div className="text-center py-12">
+            <p className="text-gray-500">No problems found matching your search.</p>
+          </div>
+        ) : (
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+            {filteredProblems.map((problem) => (
+              <ProblemCard
+                key={problem.id}
+                problem={problem}
+                onStartProblem={handleStartProblem}
+                onContinueProblem={handleContinueProblem}
+                onStartFresh={handleStartFresh}
+              />
+            ))}
+          </div>
+        )}
+      </main>
     </div>
   );
 }
