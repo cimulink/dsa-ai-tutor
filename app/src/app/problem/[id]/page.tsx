@@ -285,33 +285,33 @@ const ProblemWorkspaceHeader: React.FC<{
 }> = ({ problem, onBackClick, onSettingsClick, onHelpClick }) => {
   return (
     <header className="bg-white/90 backdrop-blur-sm border-b shadow-sm sticky top-0 z-50">
-      <div className="px-4 py-2">
+      <div className="px-3 py-1.5">
         <div className="flex items-center justify-between">
-          <div className="flex items-center space-x-3">
-            <Button variant="ghost" size="icon" onClick={onBackClick} className="h-8 w-8">
-              <ArrowLeft size={16} />
+          <div className="flex items-center space-x-2">
+            <Button variant="ghost" size="icon" onClick={onBackClick} className="h-7 w-7">
+              <ArrowLeft size={14} />
             </Button>
             <div>
-              <h1 className="text-lg font-bold text-gray-900">{problem.title}</h1>
-              <div className="flex items-center space-x-2 mt-0.5">
-                <Badge className={`${getDifficultyColor(problem.difficulty)} text-xs py-0.5`}>
+              <h1 className="text-base font-bold text-gray-900">{problem.title}</h1>
+              <div className="flex items-center space-x-2 mt-0">
+                <Badge className={`${getDifficultyColor(problem.difficulty)} text-xs py-0.5 px-1.5`}>
                   {problem.difficulty}
                 </Badge>
                 <span className="text-xs text-gray-500">•</span>
                 <span className="text-xs text-gray-500 flex items-center">
-                  <Clock size={12} className="mr-1" />
+                  <Clock size={10} className="mr-1" />
                   {problem.timeEstimate}
                 </span>
               </div>
             </div>
           </div>
-          <div className="flex items-center space-x-1">
-            <Button variant="ghost" size="icon" onClick={onHelpClick} className="h-8 w-8">
-              <HelpCircle size={16} />
+          <div className="flex items-center space-x-0.5">
+            <Button variant="ghost" size="icon" onClick={onHelpClick} className="h-7 w-7">
+              <HelpCircle size={14} />
             </Button>
             <Link href="/settings">
-              <Button variant="ghost" size="icon" className="h-8 w-8">
-                <Settings size={16} />
+              <Button variant="ghost" size="icon" className="h-7 w-7">
+                <Settings size={14} />
               </Button>
             </Link>
           </div>
@@ -865,8 +865,8 @@ export default function ProblemWorkspace() {
       />
 
       {/* Main Content - Full Width 3-Column Layout */}
-      <div className="p-3 w-full">
-        <div className="grid grid-cols-1 lg:grid-cols-12 gap-3 h-[calc(100vh-120px)]">
+      <div className="p-2 w-full">
+        <div className="grid grid-cols-1 lg:grid-cols-12 gap-2 h-[calc(100vh-100px)]">
           {/* Left Column - Problem Description */}
           <div className="lg:col-span-3 h-full">
             <ProblemDescription problem={problem} />
@@ -896,7 +896,7 @@ export default function ProblemWorkspace() {
         </div>
 
         {/* Bottom Section - Test Results */}
-        <div className="mt-3">
+        <div className="mt-2">
           <TestResults
             results={testResults}
             isVisible={showResults}
@@ -913,27 +913,27 @@ export default function ProblemWorkspace() {
       />
 
       {/* Progress Footer */}
-      <div className="mt-3 px-3 pb-3">
+      <div className="mt-2 px-2 pb-2">
         <Card className="border shadow-sm bg-white">
-          <CardContent className="p-2">
-            <div className="flex flex-col sm:flex-row items-center justify-between gap-2">
-              <div className="flex items-center space-x-2">
-                <Button variant="outline" size="sm" className="h-7 text-xs">
-                  <ChevronLeft size={12} className="mr-1" />
+          <CardContent className="p-1.5">
+            <div className="flex flex-col sm:flex-row items-center justify-between gap-1.5">
+              <div className="flex items-center space-x-1.5">
+                <Button variant="outline" size="sm" className="h-6 text-xs px-2">
+                  <ChevronLeft size={10} className="mr-1" />
                   Previous
                 </Button>
-                <span className="text-xs text-gray-600">
+                <span className="text-xs text-gray-600 whitespace-nowrap">
                   Problem 1 of 15 • Arrays
                 </span>
-                <Button variant="outline" size="sm" className="h-7 text-xs">
+                <Button variant="outline" size="sm" className="h-6 text-xs px-2">
                   Next
-                  <ChevronRight size={12} className="ml-1" />
+                  <ChevronRight size={10} className="ml-1" />
                 </Button>
               </div>
-              <div className="flex items-center space-x-2">
+              <div className="flex items-center space-x-1.5">
                 <span className="text-xs text-gray-600">Progress:</span>
-                <div className="w-20 bg-gray-200 rounded-full h-1.5">
-                  <div className="bg-blue-600 h-1.5 rounded-full" style={{ width: '13%' }}></div>
+                <div className="w-16 bg-gray-200 rounded-full h-1">
+                  <div className="bg-blue-600 h-1 rounded-full" style={{ width: '13%' }}></div>
                 </div>
                 <span className="text-xs font-medium">2/15</span>
               </div>

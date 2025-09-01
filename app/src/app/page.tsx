@@ -225,28 +225,28 @@ const Header: React.FC<{ onSettingsClick: () => void; onLearnModeClick: () => vo
   onLearnModeClick 
 }) => {
   return (
-    <header className="bg-white/95 backdrop-blur-sm border-b shadow-sm sticky top-0 z-50">
-      <div className="max-w-7xl mx-auto px-6 py-4">
+    <header className="bg-white/90 backdrop-blur-sm border-b shadow-sm sticky top-0 z-50">
+      <div className="max-w-7xl mx-auto px-4 py-2">
         <div className="flex items-center justify-between">
-          <div className="flex items-center space-x-3">
-            <div className="w-10 h-10 bg-gradient-to-r from-blue-600 to-purple-600 rounded-xl flex items-center justify-center">
-              <GraduationCap className="text-white" size={24} />
+          <div className="flex items-center space-x-2">
+            <div className="w-8 h-8 bg-gradient-to-r from-blue-600 to-purple-600 rounded-lg flex items-center justify-center">
+              <GraduationCap className="text-white" size={18} />
             </div>
             <div>
-              <div className="text-2xl font-bold bg-gradient-to-r from-blue-600 to-purple-600 bg-clip-text text-transparent">
+              <div className="text-lg font-bold bg-gradient-to-r from-blue-600 to-purple-600 bg-clip-text text-transparent">
                 DSA AI Tutor
               </div>
-              <div className="text-xs text-muted-foreground -mt-1">Master Data Structures & Algorithms</div>
+              <div className="text-xs text-muted-foreground -mt-0.5">Master Data Structures & Algorithms</div>
             </div>
           </div>
-          <div className="flex items-center space-x-2">
-            <Button variant="ghost" onClick={onLearnModeClick} className="hidden sm:flex">
-              <Brain size={18} className="mr-2" />
-              Learn Mode
+          <div className="flex items-center space-x-1">
+            <Button variant="ghost" onClick={onLearnModeClick} className="hidden sm:flex h-8 px-2 text-sm">
+              <Brain size={16} className="mr-1" />
+              Learn
             </Button>
             <Link href="/settings">
-              <Button variant="ghost" size="icon">
-                <Settings size={20} />
+              <Button variant="ghost" size="icon" className="h-8 w-8">
+                <Settings size={16} />
               </Button>
             </Link>
           </div>

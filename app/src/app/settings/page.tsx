@@ -22,41 +22,41 @@ export default function SettingsPage() {
   return (
     <div className="min-h-screen bg-gray-100">
       <header className="bg-white/90 backdrop-blur-sm border-b shadow-sm sticky top-0 z-50">
-        <div className="px-4 py-2">
+        <div className="px-3 py-1.5">
           <div className="flex items-center justify-between">
-            <div className="flex items-center space-x-3">
-              <Button variant="ghost" size="icon" onClick={handleBackClick} className="h-8 w-8">
-                <ArrowLeft size={16} />
+            <div className="flex items-center space-x-2">
+              <Button variant="ghost" size="icon" onClick={handleBackClick} className="h-7 w-7">
+                <ArrowLeft size={14} />
               </Button>
               <div>
-                <h1 className="text-lg font-bold text-gray-900">Settings</h1>
+                <h1 className="text-base font-bold text-gray-900">Settings</h1>
               </div>
             </div>
           </div>
         </div>
       </header>
 
-      <main className="p-4 max-w-4xl mx-auto">
-        <div className="space-y-5">
+      <main className="p-3 max-w-4xl mx-auto">
+        <div className="space-y-4">
           <Card>
-            <CardHeader>
-              <CardTitle>DSA AI Tutor Configuration</CardTitle>
+            <CardHeader className="p-3">
+              <CardTitle className="text-base">DSA AI Tutor Configuration</CardTitle>
             </CardHeader>
-            <CardContent>
-              <p className="text-muted-foreground mb-4">
+            <CardContent className="p-3">
+              <p className="text-muted-foreground mb-3 text-sm">
                 Configure your AI tutor settings to get personalized help with DSA problems.
               </p>
-              <div className="bg-blue-50 border border-blue-200 rounded-lg p-3">
-                <h3 className="font-medium text-blue-800 mb-2">How to get an OpenRouter API key</h3>
-                <ol className="list-decimal list-inside space-y-1 text-sm text-blue-700">
+              <div className="bg-blue-50 border border-blue-200 rounded-lg p-2.5">
+                <h3 className="font-medium text-blue-800 mb-1.5 text-sm">How to get an OpenRouter API key</h3>
+                <ol className="list-decimal list-inside space-y-1 text-xs text-blue-700">
                   <li>Visit <a href="https://openrouter.ai/keys" target="_blank" rel="noopener noreferrer" className="text-blue-600 hover:underline inline-flex items-center">
-                    OpenRouter Keys <ExternalLink size={12} className="ml-1" />
+                    OpenRouter Keys <ExternalLink size={10} className="ml-1" />
                   </a></li>
                   <li>Sign up for a free account</li>
                   <li>Create a new API key</li>
                   <li>Copy the key and paste it below</li>
                 </ol>
-                <p className="mt-2 text-sm text-blue-700">
+                <p className="mt-1.5 text-xs text-blue-700">
                   <strong>Tip:</strong> Start with free models like Mistral 7B or Gemma 7B for cost-effective learning.
                 </p>
               </div>
