@@ -11,31 +11,58 @@ export async function executeJavaScriptCode(code: string, testCases: any[]): Pro
     // you would want to use a more secure sandboxing mechanism
     const userFunction = new Function('return ' + code)();
     
-    // Run each test case
-    const results = await Promise.all(testCases.map(async (testCase, index) => {
+    // Run each test case sequentially to avoid console.log conflicts
+    const results = [];
+    for (let index = 0; index < testCases.length; index++) {
+      const testCase = testCases[index];
+      const testCaseNumber = index + 1; // Store the test case number for use in the catch block
+      
+      // Capture console output during execution
+      const originalLog = console.log;
+      const logs: string[] = [];
+      console.log = (...args) => {
+        const logEntry = args.map(arg => 
+          typeof arg === 'object' ? JSON.stringify(arg) : String(arg)
+        ).join(' ');
+        logs.push(logEntry);
+      };
+      
       try {
-        // Capture console output during execution
-        const originalLog = console.log;
-        const logs: string[] = [];
-        console.log = (...args) => {
-          logs.push(args.map(arg => 
-            typeof arg === 'object' ? JSON.stringify(arg) : String(arg)
-          ).join(' '));
-        };
+        // Add a log to indicate test case start
+        console.log(`--- Starting Test Case ${testCaseNumber} ---`);
         
         // Start timing
         const startTime = performance.now();
         
         // Execute the user function with test case input
+        // Fix: Extract the actual parameters from the input object
         let result;
         try {
-          result = await Promise.resolve(userFunction(testCase.input));
+          // Convert the input object to individual parameters
+          const inputParams = testCase.input;
+          console.log(`Input parameters: ${JSON.stringify(inputParams)}`);
+          
+          if (typeof inputParams === 'object' && inputParams !== null) {
+            // Get the keys and values from the input object
+            const paramKeys = Object.keys(inputParams);
+            const paramValues = Object.values(inputParams);
+            console.log(`Calling function with parameters: ${paramKeys.join(', ')} = ${paramValues.map(v => JSON.stringify(v)).join(', ')}`);
+            
+            // Get the values from the input object and pass them as separate arguments
+            result = await Promise.resolve(userFunction(...paramValues));
+          } else {
+            // For backward compatibility, pass the input directly if it's not an object
+            console.log(`Calling function with direct input: ${JSON.stringify(inputParams)}`);
+            result = await Promise.resolve(userFunction(inputParams));
+          }
+          
+          console.log(`Function returned: ${JSON.stringify(result)}`);
         } catch (executionError) {
           // Restore console
           console.log = originalLog;
           
-          return {
-            testCase: index + 1,
+          results.push({
+            testCase: testCaseNumber,
             passed: false,
             error: executionError instanceof Error ? executionError.message : 'Execution error',
             input: JSON.stringify(testCase.input),
@@ -44,21 +71,19 @@ export async function executeJavaScriptCode(code: string, testCases: any[]): Pro
             description: testCase.description,
             executionTime: '0ms',
             logs
-          };
+          });
+          continue; // Continue to the next test case
         }
         
         // End timing
         const endTime = performance.now();
         const executionTime = `${Math.round(endTime - startTime)}ms`;
         
-        // Restore console
-        console.log = originalLog;
-        
         // Check if result matches expected output
         const passed = JSON.stringify(result) === JSON.stringify(testCase.expected);
         
-        return {
-          testCase: index + 1,
+        results.push({
+          testCase: testCaseNumber,
           passed,
           input: JSON.stringify(testCase.input),
           expected: JSON.stringify(testCase.expected),
@@ -66,10 +91,15 @@ export async function executeJavaScriptCode(code: string, testCases: any[]): Pro
           description: testCase.description,
           executionTime,
           logs
-        };
+        });
       } catch (error) {
-        return {
-          testCase: index + 1,
+        // Make sure console is restored even in case of errors
+        if (console.log !== originalLog) {
+          console.log = originalLog;
+        }
+        
+        results.push({
+          testCase: testCaseNumber,
           passed: false,
           error: error instanceof Error ? error.message : 'Unknown error',
           input: JSON.stringify(testCase.input),
@@ -78,9 +108,14 @@ export async function executeJavaScriptCode(code: string, testCases: any[]): Pro
           description: testCase.description,
           executionTime: '0ms',
           logs: []
-        };
+        });
+      } finally {
+        // Always restore console
+        if (console.log !== originalLog) {
+          console.log = originalLog;
+        }
       }
-    }));
+    }
     
     return results;
   } catch (error) {

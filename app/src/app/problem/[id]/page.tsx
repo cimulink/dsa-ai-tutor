@@ -27,7 +27,8 @@ import {
   Download,
   Upload,
   Zap,
-  BarChart3
+  BarChart3,
+  X
 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
@@ -214,16 +215,65 @@ const getDifficultyColor = (difficulty: string) => {
   }
 };
 
-// =====================================
-// UTILITY FUNCTIONS
-// =====================================
-
 // Format the problem context for AI
 const formatProblemContext = (problem: Problem, code: string) => {
   return `Problem: ${problem.title}
 Description: ${problem.description}
 Current Code:
 ${code}`;
+};
+
+// Generate a unique key for localStorage based on problem ID
+const getStorageKey = (problemId: string, type: 'code' | 'chat') => {
+  return `dsa-ai-tutor-${problemId}-${type}`;
+};
+
+// Save code to localStorage
+const saveCodeToStorage = (problemId: string, code: string) => {
+  try {
+    localStorage.setItem(getStorageKey(problemId, 'code'), code);
+  } catch (error) {
+    console.error('Failed to save code to localStorage:', error);
+  }
+};
+
+// Load code from localStorage
+const loadCodeFromStorage = (problemId: string): string | null => {
+  try {
+    return localStorage.getItem(getStorageKey(problemId, 'code'));
+  } catch (error) {
+    console.error('Failed to load code from localStorage:', error);
+    return null;
+  }
+};
+
+// Save chat messages to localStorage
+const saveChatToStorage = (problemId: string, messages: ChatMessage[]) => {
+  try {
+    localStorage.setItem(getStorageKey(problemId, 'chat'), JSON.stringify(messages));
+  } catch (error) {
+    console.error('Failed to save chat to localStorage:', error);
+  }
+};
+
+// Load chat messages from localStorage
+const loadChatFromStorage = (problemId: string): ChatMessage[] | null => {
+  try {
+    const stored = localStorage.getItem(getStorageKey(problemId, 'chat'));
+    return stored ? JSON.parse(stored) : null;
+  } catch (error) {
+    console.error('Failed to load chat from localStorage:', error);
+    return null;
+  }
+};
+
+// Clear chat from localStorage
+const clearChatFromStorage = (problemId: string) => {
+  try {
+    localStorage.removeItem(getStorageKey(problemId, 'chat'));
+  } catch (error) {
+    console.error('Failed to clear chat from localStorage:', error);
+  }
 };
 
 // =====================================
@@ -374,7 +424,8 @@ const AIChat: React.FC<{
   onSendMessage: (message: string) => void;
   onGetHint: () => void;
   isLoading: boolean;
-}> = ({ messages, onSendMessage, onGetHint, isLoading }) => {
+  onClearChat: () => void;
+}> = ({ messages, onSendMessage, onGetHint, isLoading, onClearChat }) => {
   const [newMessage, setNewMessage] = useState('');
 
   const handleSend = () => {
@@ -451,6 +502,15 @@ const AIChat: React.FC<{
             >
               <MessageCircle size={14} className="mr-1" />
               Explain
+            </Button>
+            <Button
+              variant="outline"
+              size="lg"
+              onClick={onClearChat}
+              className="flex items-center h-7"
+            >
+              <X size={14} className="mr-1" />
+              Clear Chat
             </Button>
           </div>
           <div className="flex space-x-2">
@@ -760,11 +820,17 @@ export default function ProblemWorkspace() {
           setTestCases(fetchedTestCases);
           
           // Check if there's a saved solution
-          const savedSolution = getSavedSolution(problemId);
+          const savedSolution = getSavedSolution(problemId) || loadCodeFromStorage(problemId);
           if (savedSolution) {
             setCode(savedSolution);
           } else {
             setCode(fetchedProblem.starterCode);
+          }
+          
+          // Load chat messages from storage
+          const savedChat = loadChatFromStorage(problemId);
+          if (savedChat && savedChat.length > 0) {
+            setMessages(savedChat);
           }
         } catch (s3Error) {
           // Fallback to mock data if S3 fails
@@ -778,11 +844,17 @@ export default function ProblemWorkspace() {
             setTestCases(mockTests);
             
             // Check if there's a saved solution
-            const savedSolution = getSavedSolution(problemId);
+            const savedSolution = getSavedSolution(problemId) || loadCodeFromStorage(problemId);
             if (savedSolution) {
               setCode(savedSolution);
             } else {
               setCode(mockProblem.starterCode);
+            }
+            
+            // Load chat messages from storage
+            const savedChat = loadChatFromStorage(problemId);
+            if (savedChat && savedChat.length > 0) {
+              setMessages(savedChat);
             }
           } else {
             throw new Error('Problem not found');
@@ -800,6 +872,20 @@ export default function ProblemWorkspace() {
       fetchProblemData();
     }
   }, [problemId]);
+
+  // Save code to localStorage whenever it changes
+  useEffect(() => {
+    if (problemId && code) {
+      saveCodeToStorage(problemId, code);
+    }
+  }, [code, problemId]);
+
+  // Save chat messages to localStorage whenever they change
+  useEffect(() => {
+    if (problemId && messages.length > 0) {
+      saveChatToStorage(problemId, messages);
+    }
+  }, [messages, problemId]);
 
   // If problem not found, redirect
   useEffect(() => {
@@ -935,8 +1021,16 @@ export default function ProblemWorkspace() {
       // Collect all console logs
       const allLogs: string[] = [];
       results.forEach(result => {
+        allLogs.push(`--- Test ${result.testCase} ${result.passed ? 'PASSED' : 'FAILED'} ---`);
         if (result.logs && result.logs.length > 0) {
-          allLogs.push(`--- Test ${result.testCase} Logs ---`, ...result.logs);
+          allLogs.push(...result.logs);
+        }
+        // Add summary information
+        allLogs.push(`Expected: ${result.expected}`);
+        allLogs.push(`Actual: ${result.actual || 'null'}`);
+        allLogs.push(`Execution Time: ${result.executionTime}`);
+        if (!result.passed && result.error) {
+          allLogs.push(`Error: ${result.error}`);
         }
       });
       
@@ -1079,6 +1173,19 @@ export default function ProblemWorkspace() {
     }, 1500);
   };
 
+  // Add clear chat functionality
+  const handleClearChat = () => {
+    const welcomeMessage: ChatMessage = {
+      id: Date.now().toString(),
+      type: 'ai',
+      content: "Hi! I'm here to help you solve this problem. What would you like to know?",
+      timestamp: new Date()
+    };
+    
+    setMessages([welcomeMessage]);
+    clearChatFromStorage(problemId);
+  };
+
   return (
     <div className="min-h-screen bg-gray-50">
       {/* Header */}
@@ -1118,6 +1225,7 @@ export default function ProblemWorkspace() {
               onSendMessage={handleSendMessage}
               onGetHint={handleGetHint}
               isLoading={isAILoading}
+              onClearChat={handleClearChat} // Add this prop
             />
           </div>
         </div>

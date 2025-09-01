@@ -1,0 +1,41 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Code Execution Test</title>
+</head>
+<body>
+    <h1>Code Execution Test</h1>
+    <div id="results"></div>
+
+    <script type="module">
+        // Import the code execution function
+        import { executeJavaScriptCode } from '../src/lib/code-execution.ts';
+        
+        // Test the code execution with a simple function
+        async function testCodeExecution() {
+            const code = `function add(a, b) {
+                console.log('Adding', a, 'and', b);
+                return a + b;
+            }
+            add`;
+            
+            const testCases = [
+                {
+                    input: { a: 2, b: 3 },
+                    expected: 5,
+                    description: 'Simple addition'
+                }
+            ];
+            
+            try {
+                const results = await executeJavaScriptCode(code, testCases);
+                document.getElementById('results').innerHTML = '<pre>' + JSON.stringify(results, null, 2) + '</pre>';
+            } catch (error) {
+                document.getElementById('results').innerHTML = '<p>Error: ' + error.message + '</p>';
+            }
+        }
+        
+        testCodeExecution();
+    </script>
+</body>
+</html>
