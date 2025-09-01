@@ -3,6 +3,7 @@
 import React, { useState, useEffect } from 'react';
 import { useParams, useRouter } from 'next/navigation';
 import Link from 'next/link';
+import ReactMarkdown from 'react-markdown';
 import { 
   ArrowLeft, 
   Settings, 
@@ -43,6 +44,7 @@ import { executeJavaScriptCode, validateJavaScriptSyntax, analyzePerformance } f
 import { markProblemAsCompleted } from '@/lib/progress-tracking';
 import { saveSolution, getSavedSolution, clearSolution } from '@/lib/solution-storage';
 import { TestCaseLogsModal } from '@/components/ui/test-case-logs-modal';
+import { ResizablePanel, VerticalResizablePanel } from '@/components/ui/resizable-panel';
 
 // =====================================
 // DUMMY DATA DEFINITIONS (for fallback)
@@ -418,6 +420,51 @@ const ProblemDescription: React.FC<{ problem: Problem }> = ({ problem }) => {
   );
 };
 
+// Markdown Renderer Component
+const MarkdownRenderer: React.FC<{ content: string }> = ({ content }) => {
+  return (
+    <ReactMarkdown
+      components={{
+        p: ({ node, ...props }) => <p className="text-xs mb-2 last:mb-0" {...props} />,
+        h1: ({ node, ...props }) => <h1 className="text-base font-bold mt-2 mb-1" {...props} />,
+        h2: ({ node, ...props }) => <h2 className="text-sm font-bold mt-2 mb-1" {...props} />,
+        h3: ({ node, ...props }) => <h3 className="text-xs font-bold mt-2 mb-1" {...props} />,
+        ul: ({ node, ...props }) => <ul className="list-disc list-inside text-xs mb-2" {...props} />,
+        ol: ({ node, ...props }) => <ol className="list-decimal list-inside text-xs mb-2" {...props} />,
+        li: ({ node, ...props }) => <li className="mb-1" {...props} />,
+        code: ({ node, className, children, ...props }: any) => {
+          // Check if it's an inline code element
+          // In react-markdown, code blocks are wrapped in a <pre> parent, inline code is not
+          const isInline = !(node?.parent?.tagName === 'pre');
+          
+          if (isInline) {
+            return (
+              <code className="bg-gray-200 px-1 py-0.5 rounded text-xs" {...props}>
+                {children}
+              </code>
+            );
+          }
+          
+          // For block code, render pre directly without wrapping in p
+          return (
+            <pre className="bg-gray-800 text-green-400 p-2 rounded text-xs overflow-x-auto my-2">
+              <code {...props}>{children}</code>
+            </pre>
+          );
+        },
+        pre: ({ node, children, ...props }: any) => <pre {...props}>{children}</pre>,
+        strong: ({ node, ...props }) => <strong className="font-bold" {...props} />,
+        em: ({ node, ...props }) => <em className="italic" {...props} />,
+        blockquote: ({ node, ...props }) => (
+          <blockquote className="border-l-2 border-gray-300 pl-2 text-gray-600 italic" {...props} />
+        ),
+      }}
+    >
+      {content}
+    </ReactMarkdown>
+  );
+};
+
 // AI Chat Component
 const AIChat: React.FC<{
   messages: ChatMessage[];
@@ -465,7 +512,7 @@ const AIChat: React.FC<{
                     : 'bg-gray-100 text-gray-900'
                 }`}
               >
-                <p className="text-xs">{message.content}</p>
+                <MarkdownRenderer content={message.content} />
               </div>
             </div>
           ))}
@@ -788,14 +835,7 @@ export default function ProblemWorkspace() {
   const [consoleLogs, setConsoleLogs] = useState<string[]>([]);
   const [showConsole, setShowConsole] = useState(false);
   const [showTerminalView, setShowTerminalView] = useState(false);
-  const [messages, setMessages] = useState<ChatMessage[]>([
-    {
-      id: '1',
-      type: 'ai',
-      content: "Hi! I'm here to help you solve this problem. What would you like to know?",
-      timestamp: new Date()
-    }
-  ]);
+  const [messages, setMessages] = useState<ChatMessage[]>([]); // Initialize as empty array
   const [isAILoading, setIsAILoading] = useState(false);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
@@ -831,6 +871,14 @@ export default function ProblemWorkspace() {
           const savedChat = loadChatFromStorage(problemId);
           if (savedChat && savedChat.length > 0) {
             setMessages(savedChat);
+          } else {
+            // Set default welcome message only if no saved chat exists
+            setMessages([{
+              id: '1',
+              type: 'ai',
+              content: "Hi! I'm here to help you solve this problem. What would you like to know?",
+              timestamp: new Date()
+            }]);
           }
         } catch (s3Error) {
           // Fallback to mock data if S3 fails
@@ -855,6 +903,14 @@ export default function ProblemWorkspace() {
             const savedChat = loadChatFromStorage(problemId);
             if (savedChat && savedChat.length > 0) {
               setMessages(savedChat);
+            } else {
+              // Set default welcome message only if no saved chat exists
+              setMessages([{
+                id: '1',
+                type: 'ai',
+                content: "Hi! I'm here to help you solve this problem. What would you like to know?",
+                timestamp: new Date()
+              }]);
             }
           } else {
             throw new Error('Problem not found');
@@ -1196,38 +1252,43 @@ export default function ProblemWorkspace() {
         onHelpClick={handleHelpClick}
       />
 
-      {/* Main Content - Full Width 3-Column Layout */}
+      {/* Main Content - Full Width 3-Column Layout with Resizable Panels */}
       <div className="p-2 w-full">
-        <div className="grid grid-cols-1 lg:grid-cols-12 gap-2 h-[calc(100vh-100px)]">
-          {/* Left Column - Problem Description */}
-          <div className="lg:col-span-3 h-full">
-            <ProblemDescription problem={problem} />
-          </div>
-
-          {/* Middle Column - Code Editor */}
-          <div className="lg:col-span-6 h-full">
-            <CodeEditor
-              code={code}
-              onChange={setCode}
-              onRun={handleRunTests}
-              onReset={handleReset}
-              onSubmit={handleSubmit}
-              onSave={handleSaveSolution}
-              onLoad={handleLoadSolution}
-              isRunning={isRunning}
-            />
-          </div>
-
-          {/* Right Column - AI Chat */}
-          <div className="lg:col-span-3 h-full">
-            <AIChat
-              messages={messages}
-              onSendMessage={handleSendMessage}
-              onGetHint={handleGetHint}
-              isLoading={isAILoading}
-              onClearChat={handleClearChat} // Add this prop
-            />
-          </div>
+        <div className="h-[calc(100vh-100px)]">
+          <ResizablePanel
+            leftPanel={
+              <ResizablePanel
+                leftPanel={<ProblemDescription problem={problem} />}
+                rightPanel={
+                  <CodeEditor
+                    code={code}
+                    onChange={setCode}
+                    onRun={handleRunTests}
+                    onReset={handleReset}
+                    onSubmit={handleSubmit}
+                    onSave={handleSaveSolution}
+                    onLoad={handleLoadSolution}
+                    isRunning={isRunning}
+                  />
+                }
+                initialLeftWidth={400}
+                minLeftWidth={300}
+                maxLeftWidth={800}
+              />
+            }
+            rightPanel={
+              <AIChat
+                messages={messages}
+                onSendMessage={handleSendMessage}
+                onGetHint={handleGetHint}
+                isLoading={isAILoading}
+                onClearChat={handleClearChat}
+              />
+            }
+            initialLeftWidth={800}
+            minLeftWidth={600}
+            maxLeftWidth={1200}
+          />
         </div>
 
         {/* Bottom Section - Test Results */}
