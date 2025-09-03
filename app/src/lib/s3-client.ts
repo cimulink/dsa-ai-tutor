@@ -4,7 +4,7 @@ import { getUserProgress, saveUserProgress, initializeUserProgress } from '@/lib
 // S3 bucket configuration
 const S3_BUCKET_URL = typeof window !== 'undefined' && window.location.hostname === 'localhost' 
   ? 'http://localhost:8000' 
-  : 'https://dsa-ai-tutor-content.s3.amazonaws.com';
+  : 'https://dsa-ai-tutor.s3.ap-south-1.amazonaws.com';
 const S3_REGION = 'us-east-1';
 
 // Cache configuration
