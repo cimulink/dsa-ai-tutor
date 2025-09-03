@@ -170,7 +170,8 @@ const TopicNavigation: React.FC<{
   activeTopic: string;
   onTopicSelect: (topicId: string) => void;
   topicProgress: Record<string, number>;
-}> = ({ topics, activeTopic, onTopicSelect, topicProgress }) => {
+  userProgress: UserProgress;
+}> = ({ topics, activeTopic, onTopicSelect, topicProgress, userProgress }) => {
   // Filter out the "Algorithms" topic
   const filteredTopics = topics.filter(topic => topic.id !== 'algorithms');
   
@@ -183,8 +184,13 @@ const TopicNavigation: React.FC<{
         </h2>
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-5 gap-4">
           {filteredTopics.map((topic) => {
-            const progressPercentage = topicProgress[topic.id] || 0;
-            const completedCount = Math.round((progressPercentage / 100) * topic.count);
+            // Get actual user progress for this topic
+            const topicProgressData = userProgress.topics[topic.id];
+            const completedCount = topicProgressData ? topicProgressData.completed : 0;
+            // Use the topic count from the topic data as the total
+            const totalCount = topic.count;
+            // Calculate progress percentage based on actual counts
+            const progressPercentage = totalCount > 0 ? Math.round((completedCount / totalCount) * 100) : 0;
             
             return (
               <Card
@@ -203,7 +209,7 @@ const TopicNavigation: React.FC<{
                     <h3 className="font-semibold text-gray-900 mb-1">{topic.name}</h3>
                     <p className="text-xs text-muted-foreground mb-2 leading-relaxed">{topic.description}</p>
                     <div className="flex justify-between text-xs text-muted-foreground">
-                      <span>{topic.count} problems</span>
+                      <span>{totalCount} problems</span>
                       <span>{completedCount} solved</span>
                     </div>
                     {completedCount > 0 && (
@@ -452,6 +458,7 @@ export default function ProblemBrowser() {
         activeTopic={activeTopic} 
         onTopicSelect={handleTopicSelect} 
         topicProgress={topicProgress}
+        userProgress={userProgress}
       />
       
       <main className="max-w-7xl mx-auto px-6 py-8">
