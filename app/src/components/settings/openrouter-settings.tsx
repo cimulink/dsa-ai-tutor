@@ -182,10 +182,10 @@ export function OpenRouterSettings({ onSettingsSaved }: OpenRouterSettingsProps)
         <div className="text-sm text-muted-foreground pt-4 border-t">
           <h4 className="font-medium mb-2">Popular Free Models</h4>
           <ul className="list-disc list-inside space-y-1">
-            <li><code className="bg-gray-100 px-1 rounded">mistralai/mistral-7b-instruct</code></li>
-            <li><code className="bg-gray-100 px-1 rounded">google/gemma-7b-it</code></li>
-            <li><code className="bg-gray-100 px-1 rounded">meta-llama/llama-3-8b-instruct</code></li>
-            <li><code className="bg-gray-100 px-1 rounded">openchat/openchat-7b</code></li>
+            <li><code className="bg-gray-100 px-1 rounded">deepseek/deepseek-chat-v3.1:free</code></li>
+            <li><code className="bg-gray-100 px-1 rounded">deepseek/deepseek-chat-v3-0324:free</code></li>
+            <li><code className="bg-gray-100 px-1 rounded">qwen/qwen3-coder:free</code></li>
+            <li><code className="bg-gray-100 px-1 rounded">moonshotai/kimi-k2:free</code></li>
           </ul>
           <p className="mt-3">
             <strong>Privacy & Security:</strong> Your API key is stored locally in your browser and never sent to any server other than OpenRouter.
