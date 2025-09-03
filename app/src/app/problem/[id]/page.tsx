@@ -1216,18 +1216,7 @@ export default function ProblemWorkspace() {
   };
 
   const handleGetHint = async () => {
-    const randomHint = problem.hints[Math.floor(Math.random() * problem.hints.length)];
     await handleSendMessage("Can you give me a hint?");
-    
-    setTimeout(async () => {
-      const hintMessage: ChatMessage = {
-        id: (Date.now() + 2).toString(),
-        type: 'ai',
-        content: `💡 Hint: ${randomHint}`,
-        timestamp: new Date()
-      };
-      setMessages(prev => [...prev, hintMessage]);
-    }, 1500);
   };
 
   // Add clear chat functionality
