@@ -1,0 +1,30 @@
+[
+  {
+    "input": {
+      "n": 1
+    },
+    "expected": [[1,3]],
+    "description": "Single disk case"
+  },
+  {
+    "input": {
+      "n": 2
+    },
+    "expected": [[1,2],[1,3],[2,3]],
+    "description": "Two disks case"
+  },
+  {
+    "input": {
+      "n": 3
+    },
+    "expected": [[1,3],[1,2],[3,2],[1,3],[2,1],[2,3],[1,3]],
+    "description": "Three disks case"
+  },
+  {
+    "input": {
+      "n": 0
+    },
+    "expected": [],
+    "description": "Zero disks case"
+  }
+]

@@ -1,0 +1,41 @@
+{
+  "id": "number-of-connected-components",
+  "title": "Number of Connected Components in Graph",
+  "difficulty": "Medium",
+  "description": "Given n nodes labeled from 0 to n-1 and a list of undirected edges (each edge is a pair of nodes), write a function to find the number of connected components in the graph.",
+  "completed": false,
+  "topic": "graphs",
+  "timeEstimate": "25 min",
+  "companies": ["Facebook", "Amazon", "Microsoft", "Google"],
+  "examples": [
+    {
+      "input": "n = 5, edges = [[0, 1], [1, 2], [3, 4]]",
+      "output": "2",
+      "explanation": "There are two connected components: {0,1,2} and {3,4}"
+    },
+    {
+      "input": "n = 5, edges = [[0, 1], [1, 2], [2, 3], [3, 4]]",
+      "output": "1",
+      "explanation": "All nodes are connected in one component"
+    },
+    {
+      "input": "n = 4, edges = []",
+      "output": "4",
+      "explanation": "Each node is its own component"
+    }
+  ],
+  "constraints": [
+    "1 <= n <= 2000",
+    "1 <= edges.length <= 5000",
+    "edges[i].length == 2",
+    "0 <= edges[i][0] <= n - 1",
+    "0 <= edges[i][1] <= n - 1",
+    "No duplicate edges and no self-loops"
+  ],
+  "starterCode": "function countComponents(n, edges) {\n    // Your code here\n    \n}",
+  "hints": [
+    "Think about using Union-Find (Disjoint Set Union) data structure.",
+    "Alternatively, you can use DFS or BFS to explore each component.",
+    "Keep track of visited nodes to avoid counting the same component multiple times."
+  ]
+}

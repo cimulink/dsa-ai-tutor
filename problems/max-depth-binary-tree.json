@@ -1,0 +1,37 @@
+{
+  "id": "max-depth-binary-tree",
+  "title": "Maximum Depth of Binary Tree",
+  "difficulty": "Easy",
+  "description": "Given the root of a binary tree, return its maximum depth. A binary tree's maximum depth is the number of nodes along the longest path from the root node down to the farthest leaf node.",
+  "completed": false,
+  "topic": "trees",
+  "timeEstimate": "20 min",
+  "companies": ["LinkedIn", "Amazon", "Microsoft", "Google"],
+  "examples": [
+    {
+      "input": "root = [3,9,20,null,null,15,7]",
+      "output": "3"
+    },
+    {
+      "input": "root = [1,null,2]",
+      "output": "2"
+    },
+    {
+      "input": "root = []",
+      "output": "0",
+      "explanation": "An empty tree has depth 0"
+    }
+  ],
+  "constraints": [
+    "The number of nodes in the tree is in the range [0, 10⁴].",
+    "-100 <= Node.val <= 100"
+  ],
+  "starterCode": "// Definition for a binary tree node.\n// class TreeNode {\n//     constructor(val, left, right) {\n//         this.val = (val===undefined ? 0 : val);\n//         this.left = (left===undefined ? null : left);\n//         this.right = (right===undefined ? null : right);\n//     }\n// }\n\nfunction maxDepth(root) {\n    // Your code here\n    \n}",
+  "preProcessCode": "class TreeNode {\n    constructor(val, left, right) {\n        this.val = (val===undefined ? 0 : val);\n        this.left = (left===undefined ? null : left);\n        this.right = (right===undefined ? null : right);\n    }\n}\n\nfunction arrayToBinaryTree(arr) {\n  if (!arr || arr.length === 0 || arr[0] === null) return null;\n  \n  const root = new TreeNode(arr[0]);\n  const queue = [root];\n  let i = 1;\n  \n  while (queue.length > 0 && i < arr.length) {\n    const current = queue.shift();\n    \n    // Add left child\n    if (i < arr.length && arr[i] !== null) {\n      current.left = new TreeNode(arr[i]);\n      queue.push(current.left);\n    }\n    i++;\n    \n    // Add right child\n    if (i < arr.length && arr[i] !== null) {\n      current.right = new TreeNode(arr[i]);\n      queue.push(current.right);\n    }\n    i++;\n  }\n  \n  return root;\n}",
+  "postProcessCode": "function binaryTreeDepth(root) {\n  // Handle null, undefined, or empty cases\n  if (root === null || root === undefined) return 0;\n  // Handle case where root might be an empty array (from failed conversion)\n  if (Array.isArray(root) && root.length === 0) return 0;\n  // Additional safety check for unexpected types\n  if (typeof root !== 'object') return 0;\n  // For safety, check if left and right properties exist before accessing\n  const leftDepth = root.left !== undefined && root.left !== null ? binaryTreeDepth(root.left) : 0;\n  const rightDepth = root.right !== undefined && root.right !== null ? binaryTreeDepth(root.right) : 0;\n  return Math.max(leftDepth, rightDepth) + 1;\n}",
+  "hints": [
+    "Think about how to traverse the tree recursively.",
+    "The maximum depth is the maximum of the depths of the left and right subtrees plus 1.",
+    "Consider both recursive and iterative approaches."
+  ]
+}

@@ -1,0 +1,50 @@
+[
+  {
+    "id": "find-path-in-graph",
+    "title": "Find Path in Graph",
+    "difficulty": "Medium",
+    "description": "Determine if there is a path between two nodes in a directed graph.",
+    "completed": false,
+    "topic": "graphs",
+    "timeEstimate": "25 min",
+    "companies": ["Microsoft", "Amazon", "Facebook", "Google"],
+    "examples": [
+      {
+        "input": "graph = {0: [1, 2], 1: [2], 2: [0, 3], 3: [3]}, source = 1, destination = 3",
+        "output": "true"
+      }
+    ]
+  },
+  {
+    "id": "number-of-connected-components",
+    "title": "Number of Connected Components in Graph",
+    "difficulty": "Medium",
+    "description": "Find the number of connected components in an undirected graph.",
+    "completed": false,
+    "topic": "graphs",
+    "timeEstimate": "25 min",
+    "companies": ["Facebook", "Amazon", "Microsoft", "Google"],
+    "examples": [
+      {
+        "input": "n = 5, edges = [[0, 1], [1, 2], [3, 4]]",
+        "output": "2"
+      }
+    ]
+  },
+  {
+    "id": "course-schedule",
+    "title": "Course Schedule",
+    "difficulty": "Medium",
+    "description": "Determine if it is possible to finish all courses given prerequisites.",
+    "completed": false,
+    "topic": "graphs",
+    "timeEstimate": "30 min",
+    "companies": ["Amazon", "Microsoft", "Google", "Facebook"],
+    "examples": [
+      {
+        "input": "numCourses = 2, prerequisites = [[1,0]]",
+        "output": "true"
+      }
+    ]
+  }
+]

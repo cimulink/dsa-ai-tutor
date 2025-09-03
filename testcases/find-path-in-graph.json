@@ -1,0 +1,47 @@
+[
+  {
+    "input": {
+      "graph": {"0": [1, 2], "1": [2], "2": [0, 3], "3": [3]},
+      "source": 1,
+      "destination": 3
+    },
+    "expected": true,
+    "description": "Path exists from source to destination"
+  },
+  {
+    "input": {
+      "graph": {"0": [1, 2], "1": [2], "2": [0, 3], "3": [3]},
+      "source": 3,
+      "destination": 0
+    },
+    "expected": false,
+    "description": "No path from source to destination"
+  },
+  {
+    "input": {
+      "graph": {"0": [1], "1": [], "2": [3]},
+      "source": 0,
+      "destination": 2
+    },
+    "expected": false,
+    "description": "Disconnected components"
+  },
+  {
+    "input": {
+      "graph": {"0": [1], "1": [2], "2": [3], "3": []},
+      "source": 0,
+      "destination": 3
+    },
+    "expected": true,
+    "description": "Linear path exists"
+  },
+  {
+    "input": {
+      "graph": {},
+      "source": 0,
+      "destination": 1
+    },
+    "expected": false,
+    "description": "Empty graph"
+  }
+]

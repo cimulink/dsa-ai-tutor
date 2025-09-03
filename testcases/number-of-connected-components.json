@@ -1,0 +1,42 @@
+[
+  {
+    "input": {
+      "n": 5,
+      "edges": [[0, 1], [1, 2], [3, 4]]
+    },
+    "expected": 2,
+    "description": "Two connected components"
+  },
+  {
+    "input": {
+      "n": 5,
+      "edges": [[0, 1], [1, 2], [2, 3], [3, 4]]
+    },
+    "expected": 1,
+    "description": "Single connected component"
+  },
+  {
+    "input": {
+      "n": 4,
+      "edges": []
+    },
+    "expected": 4,
+    "description": "No edges, each node is its own component"
+  },
+  {
+    "input": {
+      "n": 1,
+      "edges": []
+    },
+    "expected": 1,
+    "description": "Single node"
+  },
+  {
+    "input": {
+      "n": 6,
+      "edges": [[0, 1], [2, 3], [4, 5]]
+    },
+    "expected": 3,
+    "description": "Three separate pairs"
+  }
+]

@@ -66,23 +66,26 @@ export async function executeJavaScriptCode(
               executionCode = preProcessCode + '\n' + code;
             }
             
+            // Extract the main function name from the starter code
+            const mainFunctionName = extractFunctionName(code);
             // Create the user function with the combined code
-            const userFunction = new Function(executionCode + '; return mergeTwoLists;')();
+            const userFunction = new Function(executionCode + `; return ${mainFunctionName};`)();
             
             // Apply pre-processing if available
             let processedParamValues = paramValues;
             if (preProcessCode) {
-              // Extract the arrayToLinkedList function from preProcessCode
+              // Extract the pre-processing function name from preProcessCode
+              const preProcessFunctionName = extractFunctionName(preProcessCode);
               try {
-                const preProcessEval = new Function(preProcessCode + '; return arrayToLinkedList;');
-                const arrayToLinkedList = preProcessEval();
+                const preProcessEval = new Function(preProcessCode + `; return ${preProcessFunctionName};`);
+                const preProcessFunc = preProcessEval();
                 
                 processedParamValues = paramValues.map((value, index) => {
                   // Check if this parameter needs pre-processing (array inputs)
                   if (Array.isArray(value)) {
                     try {
                       console.log(`Applying pre-processing to parameter ${paramKeys[index]}`);
-                      return arrayToLinkedList(value);
+                      return preProcessFunc(value);
                     } catch (error) {
                       console.error(`Error in pre-processing for ${paramKeys[index]}:`, error);
                       return value; // Return original value if pre-processing fails
@@ -91,7 +94,7 @@ export async function executeJavaScriptCode(
                   return value;
                 });
               } catch (error) {
-                console.error('Error extracting arrayToLinkedList function:', error);
+                console.error(`Error extracting ${preProcessFunctionName} function:`, error);
               }
             }
             
@@ -107,17 +110,21 @@ export async function executeJavaScriptCode(
               executionCode = preProcessCode + '\n' + code;
             }
             
+            // Extract the main function name from the starter code
+            const mainFunctionName = extractFunctionName(code);
             // Create the user function with the combined code
-            const userFunction = new Function(executionCode + '; return mergeTwoLists;')();
+            const userFunction = new Function(executionCode + `; return ${mainFunctionName};`)();
             
             // Apply pre-processing if available
             let processedInput = inputParams;
             if (preProcessCode && Array.isArray(inputParams)) {
+              // Extract the pre-processing function name from preProcessCode
+              const preProcessFunctionName = extractFunctionName(preProcessCode);
               try {
-                const preProcessEval = new Function(preProcessCode + '; return arrayToLinkedList;');
-                const arrayToLinkedList = preProcessEval();
+                const preProcessEval = new Function(preProcessCode + `; return ${preProcessFunctionName};`);
+                const preProcessFunc = preProcessEval();
                 console.log(`Applying pre-processing to direct input`);
-                processedInput = arrayToLinkedList(inputParams);
+                processedInput = preProcessFunc(inputParams);
               } catch (error) {
                 console.error(`Error in pre-processing for direct input:`, error);
               }
@@ -128,12 +135,16 @@ export async function executeJavaScriptCode(
           // Apply post-processing if available
           if (postProcessFunction && result !== undefined) {
             try {
-              console.log(`Applying post-processing to result`);
+              console.log(`Applying post-processing to result: ${JSON.stringify(result)}`);
               // If result is null, pass null to post-processing function instead of converting to empty array
               // The post-processing function should handle null appropriately
               result = postProcessFunction(result);
             } catch (error) {
               console.error(`Error in post-processing:`, error);
+              // If post-processing fails, we should still return a result
+              // This prevents the entire test from failing due to post-processing issues
+              console.log(`Post-processing failed, using raw result: ${JSON.stringify(result)}`);
+              // Don't override the result on post-processing error, let the raw result through
             }
           } else if (result === null) {
             // If no post-processing function and result is null, convert to empty array
@@ -297,4 +308,44 @@ export async function analyzePerformance(code: string, testCases: any[]): Promis
       performanceTips: [`Error during analysis: ${error instanceof Error ? error.message : 'Unknown error'}`]
     };
   }
+}
+
+/**
+ * Extracts the function name from JavaScript function code
+ * @param code The JavaScript code containing a function definition
+ * @returns The name of the function
+ */
+function extractFunctionName(code: string): string {
+  // Match function declaration patterns:
+  // 1. function functionName(...)
+  // 2. const functionName = function(...)
+  // 3. const functionName = (...) => 
+  // 4. functionName(...) (for class methods or other patterns)
+  
+  // Try to match standard function declaration: function functionName(
+  const functionMatch = code.match(/function\s+([a-zA-Z_$][a-zA-Z0-9_$]*)\s*\(/);
+  if (functionMatch) {
+    return functionMatch[1];
+  }
+  
+  // Try to match arrow function or function expression: const functionName = 
+  const constMatch = code.match(/const\s+([a-zA-Z_$][a-zA-Z0-9_$]*)\s*=\s*(function|\()/);
+  if (constMatch) {
+    return constMatch[1];
+  }
+  
+  // Try to match function expression: let/const functionName = function
+  const letMatch = code.match(/(let|const)\s+([a-zA-Z_$][a-zA-Z0-9_$]*)\s*=\s*function/);
+  if (letMatch) {
+    return letMatch[2];
+  }
+  
+  // Try to match arrow function: let/const functionName = (
+  const letArrowMatch = code.match(/(let|const)\s+([a-zA-Z_$][a-zA-Z0-9_$]*)\s*=\s*\(/);
+  if (letArrowMatch) {
+    return letArrowMatch[2];
+  }
+  
+  // If no pattern matches, throw an error
+  throw new Error('Could not extract function name from code: ' + code.substring(0, 100) + '...');
 }

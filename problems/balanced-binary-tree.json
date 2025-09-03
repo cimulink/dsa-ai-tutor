@@ -1,0 +1,37 @@
+{
+  "id": "balanced-binary-tree",
+  "title": "Balanced Binary Tree",
+  "difficulty": "Easy",
+  "description": "Given a binary tree, determine if it is height-balanced. A height-balanced binary tree is defined as a binary tree in which the depth of the two subtrees of every node never differs by more than one.",
+  "completed": false,
+  "topic": "trees",
+  "timeEstimate": "20 min",
+  "companies": ["Amazon", "Microsoft", "Google", "Facebook"],
+  "examples": [
+    {
+      "input": "root = [3,9,20,null,null,15,7]",
+      "output": "true"
+    },
+    {
+      "input": "root = [1,2,2,3,3,null,null,4,4]",
+      "output": "false"
+    },
+    {
+      "input": "root = []",
+      "output": "true",
+      "explanation": "An empty tree is considered balanced"
+    }
+  ],
+  "constraints": [
+    "The number of nodes in the tree is in the range [0, 5000].",
+    "-10⁴ <= Node.val <= 10⁴"
+  ],
+  "starterCode": "// Definition for a binary tree node.\n// class TreeNode {\n//     constructor(val, left, right) {\n//         this.val = (val===undefined ? 0 : val);\n//         this.left = (left===undefined ? null : left);\n//         this.right = (right===undefined ? null : right);\n//     }\n// }\n\nfunction isBalanced(root) {\n    // Your code here\n    \n}",
+  "preProcessCode": "class TreeNode {\n    constructor(val, left, right) {\n        this.val = (val===undefined ? 0 : val);\n        this.left = (left===undefined ? null : left);\n        this.right = (right===undefined ? null : right);\n    }\n}\n\nfunction arrayToBinaryTree(arr) {\n  if (!arr || arr.length === 0 || arr[0] === null) return null;\n  \n  const root = new TreeNode(arr[0]);\n  const queue = [root];\n  let i = 1;\n  \n  while (queue.length > 0 && i < arr.length) {\n    const current = queue.shift();\n    \n    // Add left child\n    if (i < arr.length && arr[i] !== null) {\n      current.left = new TreeNode(arr[i]);\n      queue.push(current.left);\n    }\n    i++;\n    \n    // Add right child\n    if (i < arr.length && arr[i] !== null) {\n      current.right = new TreeNode(arr[i]);\n      queue.push(current.right);\n    }\n    i++;\n  }\n  \n  return root;\n}",
+  "postProcessCode": "function processResult(result) {\n  return result;\n}",
+  "hints": [
+    "Think about how to calculate the height of each subtree.",
+    "A tree is balanced if the absolute difference between the heights of left and right subtrees is not more than 1 for all nodes.",
+    "Consider using a helper function that returns both the height and balance status."
+  ]
+}

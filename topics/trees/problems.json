@@ -1,0 +1,50 @@
+[
+  {
+    "id": "max-depth-binary-tree",
+    "title": "Maximum Depth of Binary Tree",
+    "difficulty": "Easy",
+    "description": "Find the maximum depth of a binary tree using recursion.",
+    "completed": false,
+    "topic": "trees",
+    "timeEstimate": "20 min",
+    "companies": ["LinkedIn", "Amazon", "Microsoft", "Google"],
+    "examples": [
+      {
+        "input": "root = [3,9,20,null,null,15,7]",
+        "output": "3"
+      }
+    ]
+  },
+  {
+    "id": "balanced-binary-tree",
+    "title": "Balanced Binary Tree",
+    "difficulty": "Easy",
+    "description": "Determine if a binary tree is height-balanced.",
+    "completed": false,
+    "topic": "trees",
+    "timeEstimate": "20 min",
+    "companies": ["Amazon", "Microsoft", "Google", "Facebook"],
+    "examples": [
+      {
+        "input": "root = [3,9,20,null,null,15,7]",
+        "output": "true"
+      }
+    ]
+  },
+  {
+    "id": "binary-tree-inorder-traversal",
+    "title": "Binary Tree Inorder Traversal",
+    "difficulty": "Easy",
+    "description": "Return the inorder traversal of a binary tree's nodes' values.",
+    "completed": false,
+    "topic": "trees",
+    "timeEstimate": "20 min",
+    "companies": ["Amazon", "Microsoft", "Google"],
+    "examples": [
+      {
+        "input": "root = [1,null,2,3]",
+        "output": "[1,3,2]"
+      }
+    ]
+  }
+]

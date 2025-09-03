@@ -1,0 +1,50 @@
+[
+  {
+    "id": "fibonacci",
+    "title": "Fibonacci Number",
+    "difficulty": "Easy",
+    "description": "Calculate the nth Fibonacci number using recursion.",
+    "completed": false,
+    "topic": "recursion",
+    "timeEstimate": "15 min",
+    "companies": ["Amazon", "Microsoft", "Apple", "Google"],
+    "examples": [
+      {
+        "input": "n = 2",
+        "output": "1"
+      }
+    ]
+  },
+  {
+    "id": "tower-of-hanoi",
+    "title": "Tower of Hanoi",
+    "difficulty": "Medium",
+    "description": "Solve the classic Tower of Hanoi puzzle using recursion.",
+    "completed": false,
+    "topic": "recursion",
+    "timeEstimate": "30 min",
+    "companies": ["Microsoft", "Amazon", "Apple", "Google"],
+    "examples": [
+      {
+        "input": "n = 1",
+        "output": "[[1,3]]"
+      }
+    ]
+  },
+  {
+    "id": "permutations",
+    "title": "Permutations",
+    "difficulty": "Medium",
+    "description": "Generate all possible permutations of an array using recursion and backtracking.",
+    "completed": false,
+    "topic": "recursion",
+    "timeEstimate": "25 min",
+    "companies": ["Amazon", "Microsoft", "Google", "Facebook"],
+    "examples": [
+      {
+        "input": "nums = [1,2,3]",
+        "output": "[[1,2,3],[1,3,2],[2,1,3],[2,3,1],[3,1,2],[3,2,1]]"
+      }
+    ]
+  }
+]

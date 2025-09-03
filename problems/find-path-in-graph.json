@@ -1,0 +1,38 @@
+{
+  "id": "find-path-in-graph",
+  "title": "Find Path in Graph",
+  "difficulty": "Medium",
+  "description": "Given a directed graph and two nodes (source and destination), design an algorithm to find out whether there is a route from source to destination. The graph is represented as an adjacency list.",
+  "completed": false,
+  "topic": "graphs",
+  "timeEstimate": "25 min",
+  "companies": ["Microsoft", "Amazon", "Facebook", "Google"],
+  "examples": [
+    {
+      "input": "graph = {0: [1, 2], 1: [2], 2: [0, 3], 3: [3]}, source = 1, destination = 3",
+      "output": "true",
+      "explanation": "There is a path from node 1 to node 3: 1 -> 2 -> 3"
+    },
+    {
+      "input": "graph = {0: [1, 2], 1: [2], 2: [0, 3], 3: [3]}, source = 3, destination = 0",
+      "output": "false",
+      "explanation": "There is no path from node 3 to node 0"
+    },
+    {
+      "input": "graph = {0: [1], 1: [], 2: [3]}, source = 0, destination = 2",
+      "output": "false",
+      "explanation": "Nodes 0 and 2 are in different components"
+    }
+  ],
+  "constraints": [
+    "The number of nodes in the graph is in the range [0, 100].",
+    "The number of edges is in the range [0, 100].",
+    "The graph may contain self-loops and parallel edges."
+  ],
+  "starterCode": "function findPath(graph, source, destination) {\n    // Your code here\n    \n}",
+  "hints": [
+    "Think about graph traversal algorithms like BFS or DFS.",
+    "Keep track of visited nodes to avoid cycles.",
+    "Start from the source node and explore all reachable nodes."
+  ]
+}

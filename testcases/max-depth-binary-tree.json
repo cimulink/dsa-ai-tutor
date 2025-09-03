@@ -1,0 +1,37 @@
+[
+  {
+    "input": {
+      "root": [3,9,20,null,null,15,7]
+    },
+    "expected": 3,
+    "description": "Basic binary tree with depth 3"
+  },
+  {
+    "input": {
+      "root": [1,null,2]
+    },
+    "expected": 2,
+    "description": "Skewed tree with depth 2"
+  },
+  {
+    "input": {
+      "root": []
+    },
+    "expected": 0,
+    "description": "Empty tree"
+  },
+  {
+    "input": {
+      "root": [1]
+    },
+    "expected": 1,
+    "description": "Single node tree"
+  },
+  {
+    "input": {
+      "root": [1,2,3,4,5]
+    },
+    "expected": 3,
+    "description": "Balanced tree with depth 3"
+  }
+]
