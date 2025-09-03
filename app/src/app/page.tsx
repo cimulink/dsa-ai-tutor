@@ -61,10 +61,6 @@ const Header: React.FC<{ onSettingsClick: () => void; onLearnModeClick: () => vo
             </div>
           </div>
           <div className="flex items-center space-x-1">
-            <Button variant="ghost" onClick={onLearnModeClick} className="hidden sm:flex h-8 px-2 text-sm">
-              <Brain size={16} className="mr-1" />
-              Learn
-            </Button>
             <Link href="/settings">
               <Button variant="outline" className="h-8 text-sm">
                 Add OpenRouter API Key
@@ -175,6 +171,9 @@ const TopicNavigation: React.FC<{
   onTopicSelect: (topicId: string) => void;
   topicProgress: Record<string, number>;
 }> = ({ topics, activeTopic, onTopicSelect, topicProgress }) => {
+  // Filter out the "Algorithms" topic
+  const filteredTopics = topics.filter(topic => topic.id !== 'algorithms');
+  
   return (
     <div className="bg-white border-b">
       <div className="max-w-7xl mx-auto px-6 py-6">
@@ -183,7 +182,7 @@ const TopicNavigation: React.FC<{
           Choose Your Focus Area
         </h2>
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-5 gap-4">
-          {topics.map((topic) => {
+          {filteredTopics.map((topic) => {
             const progressPercentage = topicProgress[topic.id] || 0;
             const completedCount = Math.round((progressPercentage / 100) * topic.count);
             

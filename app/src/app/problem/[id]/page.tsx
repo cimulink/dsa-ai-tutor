@@ -1317,36 +1317,6 @@ export default function ProblemWorkspace() {
         testCase={selectedTestCase}
         onClose={() => setSelectedTestCase(null)}
       />
-
-      {/* Progress Footer */}
-      <div className="mt-2 px-2 pb-2">
-        <Card className="border shadow-sm bg-white">
-          <CardContent className="p-1.5">
-            <div className="flex flex-col sm:flex-row items-center justify-between gap-1.5">
-              <div className="flex items-center space-x-1.5">
-                <Button variant="outline" size="sm" className="h-6 text-xs px-2">
-                  <ChevronLeft size={10} className="mr-1" />
-                  Previous
-                </Button>
-                <span className="text-xs text-gray-600 whitespace-nowrap">
-                  Problem 1 of 15 • Arrays
-                </span>
-                <Button variant="outline" size="sm" className="h-6 text-xs px-2">
-                  Next
-                  <ChevronRight size={10} className="ml-1" />
-                </Button>
-              </div>
-              <div className="flex items-center space-x-1.5">
-                <span className="text-xs text-gray-600">Progress:</span>
-                <div className="w-16 bg-gray-200 rounded-full h-1">
-                  <div className="bg-blue-600 h-1 rounded-full" style={{ width: '13%' }}></div>
-                </div>
-                <span className="text-xs font-medium">2/15</span>
-              </div>
-            </div>
-          </CardContent>
-        </Card>
-      </div>
     </div>
   );
 }
