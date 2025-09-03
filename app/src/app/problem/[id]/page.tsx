@@ -604,14 +604,14 @@ const CodeEditor: React.FC<{
             Code Editor
           </CardTitle>
           <div className="flex space-x-2">
-            <Button variant="outline" size="sm" onClick={onLoad} className="h-8 text-xs">
+            {/* <Button variant="outline" size="sm" onClick={onLoad} className="h-8 text-xs">
               <Upload size={14} className="mr-1" />
               Load
-            </Button>
-            <Button variant="outline" size="sm" onClick={onSave} className="h-8 text-xs">
+            </Button> */}
+            {/* <Button variant="outline" size="sm" onClick={onSave} className="h-8 text-xs">
               <Save size={14} className="mr-1" />
               Save
-            </Button>
+            </Button> */}
             <Button variant="outline" size="sm" onClick={onReset} className="h-8 text-xs">
               <RotateCcw size={14} className="mr-1" />
               Reset
@@ -620,10 +620,10 @@ const CodeEditor: React.FC<{
               <Play size={14} className="mr-1" />
               {isRunning ? 'Running...' : 'Run'}
             </Button>
-            <Button size="sm" onClick={onSubmit} className="h-8 text-xs">
+            {/* <Button size="sm" onClick={onSubmit} className="h-8 text-xs">
               <CheckCircle2 size={14} className="mr-1" />
               Submit
-            </Button>
+            </Button> */}
           </div>
         </div>
       </CardHeader>

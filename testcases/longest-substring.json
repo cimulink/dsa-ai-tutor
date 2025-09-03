@@ -1,0 +1,37 @@
+[
+  {
+    "input": {
+      "s": "abcabcbb"
+    },
+    "expected": 3,
+    "description": "Basic case with repeated characters"
+  },
+  {
+    "input": {
+      "s": "bbbbb"
+    },
+    "expected": 1,
+    "description": "All same characters"
+  },
+  {
+    "input": {
+      "s": "pwwkew"
+    },
+    "expected": 3,
+    "description": "Non-repeating substring at the end"
+  },
+  {
+    "input": {
+      "s": ""
+    },
+    "expected": 0,
+    "description": "Empty string"
+  },
+  {
+    "input": {
+      "s": "abcdef"
+    },
+    "expected": 6,
+    "description": "All unique characters"
+  }
+]

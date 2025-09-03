@@ -13,166 +13,6 @@ import { Problem, Topic, UserProgress } from '@/types/problem';
 import { isProblemCompleted, getTopicProgressPercentage } from '@/lib/progress-tracking';
 
 // =====================================
-// DUMMY DATA DEFINITIONS (fallback)
-// =====================================
-
-// Enhanced dummy data for problems
-const mockProblems: Problem[] = [
-  {
-    id: "two-sum",
-    title: "Two Sum",
-    difficulty: "Easy",
-    description: "Find two numbers that add to target",
-    completed: true,
-    topic: "arrays",
-    timeEstimate: "15 min",
-    companies: ["Google", "Facebook"],
-    examples: [],
-    constraints: [],
-    starterCode: "",
-    hints: []
-  },
-  {
-    id: "merge-intervals",
-    title: "Merge Intervals",
-    difficulty: "Medium", 
-    description: "Combine overlapping intervals",
-    completed: false,
-    topic: "arrays",
-    timeEstimate: "25 min",
-    companies: ["Microsoft", "Amazon"],
-    examples: [],
-    constraints: [],
-    starterCode: "",
-    hints: []
-  },
-  {
-    id: "maximum-subarray",
-    title: "Maximum Subarray",
-    difficulty: "Hard",
-    description: "Find contiguous subarray with max sum",
-    completed: false,
-    topic: "arrays",
-    timeEstimate: "35 min",
-    companies: ["Netflix", "Apple"],
-    examples: [],
-    constraints: [],
-    starterCode: "",
-    hints: []
-  },
-  {
-    id: "valid-parentheses",
-    title: "Valid Parentheses",
-    difficulty: "Easy",
-    description: "Determine if parentheses are valid",
-    completed: false,
-    topic: "strings",
-    timeEstimate: "20 min",
-    companies: ["Uber", "Airbnb"],
-    examples: [],
-    constraints: [],
-    starterCode: "",
-    hints: []
-  },
-  {
-    id: "longest-substring",
-    title: "Longest Substring Without Repeating Characters",
-    difficulty: "Medium",
-    description: "Find the longest substring without repeating characters",
-    completed: false,
-    topic: "strings",
-    timeEstimate: "30 min",
-    companies: ["LinkedIn", "Tesla"],
-    examples: [],
-    constraints: [],
-    starterCode: "",
-    hints: []
-  },
-  {
-    id: "group-anagrams",
-    title: "Group Anagrams",
-    difficulty: "Medium",
-    description: "Group strings that are anagrams",
-    completed: false,
-    topic: "hashmaps",
-    timeEstimate: "25 min",
-    companies: ["Spotify", "Dropbox"],
-    examples: [],
-    constraints: [],
-    starterCode: "",
-    hints: []
-  }
-];
-
-// Enhanced dummy data for topics
-const mockTopics: Topic[] = [
-  { 
-    id: "arrays", 
-    name: "Arrays", 
-    count: 15, 
-    completed: 2, 
-    icon: "📊", 
-    color: "from-blue-400 to-blue-600",
-    description: "Linear data structures with indexed elements"
-  },
-  { 
-    id: "strings", 
-    name: "Strings", 
-    count: 12, 
-    completed: 0, 
-    icon: "📝", 
-    color: "from-green-400 to-green-600",
-    description: "Text manipulation and pattern matching"
-  },
-  { 
-    id: "hashmaps", 
-    name: "Hash Maps", 
-    count: 10, 
-    completed: 0, 
-    icon: "🗃️", 
-    color: "from-purple-400 to-purple-600",
-    description: "Key-value data structures for fast lookup"
-  },
-  { 
-    id: "recursion", 
-    name: "Recursion", 
-    count: 6, 
-    completed: 0, 
-    icon: "🔄", 
-    color: "from-orange-400 to-orange-600",
-    description: "Self-calling functions and divide-conquer"
-  },
-  { 
-    id: "algorithms", 
-    name: "Algorithms", 
-    count: 8, 
-    completed: 0, 
-    icon: "⚡", 
-    color: "from-red-400 to-red-600",
-    description: "Step-by-step problem solving techniques"
-  }
-];
-
-// Enhanced user progress data
-const mockUserProgress: UserProgress = {
-  overall: {
-    problemsSolved: 12,
-    totalProblems: 50,
-    currentStreak: 3,
-    longestStreak: 7
-  },
-  topics: {
-    arrays: { completed: 2, total: 15, percentage: 13 },
-    strings: { completed: 0, total: 12, percentage: 0 },
-    hashmaps: { completed: 0, total: 10, percentage: 0 }
-  },
-  recentActivity: [
-    { problemId: "two-sum", date: "2024-01-15", status: "completed" },
-    { problemId: "reverse-string", date: "2024-01-14", status: "attempted" }
-  ]
-};
-
-// =====================================
 // UTILITY FUNCTIONS
 // =====================================
 
@@ -415,8 +255,17 @@ export default function ProblemBrowser() {
   const [searchTerm, setSearchTerm] = useState('');
   const [activeTopic, setActiveTopic] = useState('arrays');
   const [filteredProblems, setFilteredProblems] = useState<Problem[]>([]);
-  const [topics, setTopics] = useState<Topic[]>(mockTopics);
-  const [userProgress, setUserProgress] = useState<UserProgress>(mockUserProgress);
+  const [topics, setTopics] = useState<Topic[]>([]);
+  const [userProgress, setUserProgress] = useState<UserProgress>({
+    overall: {
+      problemsSolved: 0,
+      totalProblems: 0,
+      currentStreak: 0,
+      longestStreak: 0
+    },
+    topics: {},
+    recentActivity: []
+  });
   const [topicProgress, setTopicProgress] = useState<Record<string, number>>({});
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
@@ -446,17 +295,8 @@ export default function ProblemBrowser() {
           });
           setTopicProgress(progress);
         } catch (s3Error) {
-          // Fallback to mock data if S3 fails
-          console.warn('Failed to fetch from S3, using mock data:', s3Error);
-          setTopics(mockTopics);
-          setUserProgress(mockUserProgress);
-          
-          // Calculate topic progress percentages from mock data
-          const progress: Record<string, number> = {};
-          mockTopics.forEach(topic => {
-            progress[topic.id] = topic.completed ? (topic.completed / topic.count) * 100 : 0;
-          });
-          setTopicProgress(progress);
+          console.error('Failed to fetch from S3:', s3Error);
+          setError(s3Error instanceof Error ? s3Error.message : 'Failed to load data');
         }
       } catch (error) {
         console.error('Error fetching data:', error);
@@ -482,18 +322,14 @@ export default function ProblemBrowser() {
           );
           setFilteredProblems(filtered);
         } catch (s3Error) {
-          // Fallback to mock data if S3 fails
-          console.warn('Failed to fetch problems from S3, using mock data:', s3Error);
-          const filtered = mockProblems.filter(problem => 
-            problem.topic === activeTopic && 
-            (problem.title.toLowerCase().includes(searchTerm.toLowerCase()) || 
-             problem.description.toLowerCase().includes(searchTerm.toLowerCase()))
-          );
-          setFilteredProblems(filtered);
+          console.error('Failed to fetch problems from S3:', s3Error);
+          setError(s3Error instanceof Error ? s3Error.message : 'Failed to load problems');
+          setFilteredProblems([]);
         }
       } catch (error) {
         console.error('Error filtering problems:', error);
         setError(error instanceof Error ? error.message : 'Failed to filter problems');
+        setFilteredProblems([]);
       }
     };
 

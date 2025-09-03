@@ -1,0 +1,34 @@
+[
+  {
+    "input": {
+      "nums": [1,1,1,2,2,3],
+      "k": 2
+    },
+    "expected": [1,2],
+    "description": "Basic case with multiple frequent elements"
+  },
+  {
+    "input": {
+      "nums": [1],
+      "k": 1
+    },
+    "expected": [1],
+    "description": "Single element array"
+  },
+  {
+    "input": {
+      "nums": [1,2,3,4,5],
+      "k": 3
+    },
+    "expected": [1,2,3],
+    "description": "All elements have same frequency"
+  },
+  {
+    "input": {
+      "nums": [3,0,1,0],
+      "k": 1
+    },
+    "expected": [0],
+    "description": "Zero as element value"
+  }
+]

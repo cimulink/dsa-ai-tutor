@@ -2,7 +2,7 @@
   {
     "id": "arrays",
     "name": "Arrays",
-    "count": 15,
+    "count": 3,
     "completed": 0,
     "icon": "📊",
     "color": "from-blue-400 to-blue-600",
@@ -11,7 +11,7 @@
   {
     "id": "strings",
     "name": "Strings",
-    "count": 12,
+    "count": 2,
     "completed": 0,
     "icon": "📝",
     "color": "from-green-400 to-green-600",
@@ -20,7 +20,7 @@
   {
     "id": "hashmaps",
     "name": "Hash Maps",
-    "count": 10,
+    "count": 2,
     "completed": 0,
     "icon": "🗃️",
     "color": "from-purple-400 to-purple-600",
@@ -29,7 +29,7 @@
   {
     "id": "recursion",
     "name": "Recursion",
-    "count": 6,
+    "count": 0,
     "completed": 0,
     "icon": "🔄",
     "color": "from-orange-400 to-orange-600",
@@ -38,10 +38,37 @@
   {
     "id": "algorithms",
     "name": "Algorithms",
-    "count": 8,
+    "count": 0,
     "completed": 0,
     "icon": "⚡",
     "color": "from-red-400 to-red-600",
     "description": "Step-by-step problem solving techniques"
+  },
+  {
+    "id": "linked-lists",
+    "name": "Linked Lists",
+    "count": 2,
+    "completed": 0,
+    "icon": "🔗",
+    "color": "from-indigo-400 to-indigo-600",
+    "description": "Dynamic data structures with node-based connections"
+  },
+  {
+    "id": "trees",
+    "name": "Trees",
+    "count": 0,
+    "completed": 0,
+    "icon": "🌲",
+    "color": "from-emerald-400 to-emerald-600",
+    "description": "Hierarchical data structures with parent-child relationships"
+  },
+  {
+    "id": "graphs",
+    "name": "Graphs",
+    "count": 0,
+    "completed": 0,
+    "icon": "🕸️",
+    "color": "from-cyan-400 to-cyan-600",
+    "description": "Network structures with nodes and edges"
   }
 ]

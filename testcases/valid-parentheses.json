@@ -1,0 +1,37 @@
+[
+  {
+    "input": {
+      "s": "()"
+    },
+    "expected": true,
+    "description": "Simple valid parentheses"
+  },
+  {
+    "input": {
+      "s": "()[]{}"
+    },
+    "expected": true,
+    "description": "Multiple valid bracket types"
+  },
+  {
+    "input": {
+      "s": "(]"
+    },
+    "expected": false,
+    "description": "Mismatched brackets"
+  },
+  {
+    "input": {
+      "s": "([)]"
+    },
+    "expected": false,
+    "description": "Improperly nested brackets"
+  },
+  {
+    "input": {
+      "s": "{[]}"
+    },
+    "expected": true,
+    "description": "Properly nested complex brackets"
+  }
+]

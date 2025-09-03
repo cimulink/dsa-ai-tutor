@@ -1,0 +1,68 @@
+[
+  {
+    "id": "group-anagrams",
+    "title": "Group Anagrams",
+    "difficulty": "Medium",
+    "description": "Given an array of strings strs, group the anagrams together. You can return the answer in any order. An Anagram is a word or phrase formed by rearranging the letters of a different word or phrase, typically using all the original letters exactly once.",
+    "completed": false,
+    "topic": "hashmaps",
+    "timeEstimate": "25 min",
+    "companies": ["Spotify", "Dropbox", "Facebook", "Google"],
+    "examples": [
+      {
+        "input": "strs = [\"eat\",\"tea\",\"tan\",\"ate\",\"nat\",\"bat\"]",
+        "output": "[[\"bat\"],[\"nat\",\"tan\"],[\"ate\",\"eat\",\"tea\"]]"
+      },
+      {
+        "input": "strs = [\"\"]",
+        "output": "[[\"\"]]"
+      },
+      {
+        "input": "strs = [\"a\"]",
+        "output": "[[\"a\"]]"
+      }
+    ],
+    "constraints": [
+      "1 <= strs.length <= 10^4",
+      "0 <= strs[i].length <= 100",
+      "strs[i] consists of lowercase English letters."
+    ],
+    "starterCode": "function groupAnagrams(strs) {\n    // Your code here\n    \n}",
+    "hints": [
+      "Think about what property all anagrams share.",
+      "Consider using a hash map where the key represents the sorted characters of a word.",
+      "All anagrams will have the same sorted characters."
+    ]
+  },
+  {
+    "id": "top-k-frequent",
+    "title": "Top K Frequent Elements",
+    "difficulty": "Medium",
+    "description": "Given an integer array nums and an integer k, return the k most frequent elements. You may return the answer in any order.",
+    "completed": false,
+    "topic": "hashmaps",
+    "timeEstimate": "25 min",
+    "companies": ["Amazon", "Apple", "Google", "Facebook"],
+    "examples": [
+      {
+        "input": "nums = [1,1,1,2,2,3], k = 2",
+        "output": "[1,2]"
+      },
+      {
+        "input": "nums = [1], k = 1",
+        "output": "[1]"
+      }
+    ],
+    "constraints": [
+      "1 <= nums.length <= 10^5",
+      "1 <= k <= number of unique elements in the array",
+      "-10^4 <= nums[i] <= 10^4"
+    ],
+    "starterCode": "function topKFrequent(nums, k) {\n    // Your code here\n    \n}",
+    "hints": [
+      "Use a hash map to count the frequency of each element.",
+      "Consider using a bucket sort approach for efficiency.",
+      "Think about how to efficiently retrieve the top k elements."
+    ]
+  }
+]

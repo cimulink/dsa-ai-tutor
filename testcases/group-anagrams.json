@@ -1,0 +1,30 @@
+[
+  {
+    "input": {
+      "strs": ["eat","tea","tan","ate","nat","bat"]
+    },
+    "expected": [["bat"],["nat","tan"],["ate","eat","tea"]],
+    "description": "Basic anagram grouping"
+  },
+  {
+    "input": {
+      "strs": [""]
+    },
+    "expected": [[""]],
+    "description": "Single empty string"
+  },
+  {
+    "input": {
+      "strs": ["a"]
+    },
+    "expected": [["a"]],
+    "description": "Single character"
+  },
+  {
+    "input": {
+      "strs": ["abc","bca","cab","xyz","zyx","123"]
+    },
+    "expected": [["abc","bca","cab"],["xyz","zyx"],["123"]],
+    "description": "Multiple anagram groups"
+  }
+]

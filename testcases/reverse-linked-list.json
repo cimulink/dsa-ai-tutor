@@ -1,0 +1,30 @@
+[
+  {
+    "input": {
+      "head": [1,2,3,4,5]
+    },
+    "expected": [5,4,3,2,1],
+    "description": "Basic linked list reversal"
+  },
+  {
+    "input": {
+      "head": [1,2]
+    },
+    "expected": [2,1],
+    "description": "Short linked list"
+  },
+  {
+    "input": {
+      "head": []
+    },
+    "expected": [],
+    "description": "Empty linked list"
+  },
+  {
+    "input": {
+      "head": [1]
+    },
+    "expected": [1],
+    "description": "Single node linked list"
+  }
+]
