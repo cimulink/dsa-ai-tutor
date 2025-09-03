@@ -2,14 +2,26 @@
  * Safely executes JavaScript code in a sandboxed environment
  * @param code The JavaScript code to execute
  * @param testCases The test cases to run against the code
+ * @param preProcessCode Optional pre-processing code to convert inputs
+ * @param postProcessCode Optional post-processing code to convert outputs
  * @returns Array of test results
  */
-export async function executeJavaScriptCode(code: string, testCases: any[]): Promise<any[]> {
+export async function executeJavaScriptCode(
+  code: string, 
+  testCases: any[], 
+  preProcessCode?: string,
+  postProcessCode?: string
+): Promise<any[]> {
   try {
-    // Create a new function from the user code
-    // This is a simplified approach - in a production environment, 
-    // you would want to use a more secure sandboxing mechanism
-    const userFunction = new Function('return ' + code)();
+    // Create post-processing function if provided
+    let postProcessFunction: Function | null = null;
+    if (postProcessCode) {
+      try {
+        postProcessFunction = new Function('return ' + postProcessCode)();
+      } catch (error) {
+        console.error('Error creating post-processing function:', error);
+      }
+    }
     
     // Run each test case sequentially to avoid console.log conflicts
     const results = [];
@@ -48,12 +60,84 @@ export async function executeJavaScriptCode(code: string, testCases: any[]): Pro
             const paramValues = Object.values(inputParams);
             console.log(`Calling function with parameters: ${paramKeys.join(', ')} = ${paramValues.map(v => JSON.stringify(v)).join(', ')}`);
             
+            // Prepare the execution environment
+            let executionCode = code;
+            if (preProcessCode) {
+              executionCode = preProcessCode + '\n' + code;
+            }
+            
+            // Create the user function with the combined code
+            const userFunction = new Function(executionCode + '; return mergeTwoLists;')();
+            
+            // Apply pre-processing if available
+            let processedParamValues = paramValues;
+            if (preProcessCode) {
+              // Extract the arrayToLinkedList function from preProcessCode
+              try {
+                const preProcessEval = new Function(preProcessCode + '; return arrayToLinkedList;');
+                const arrayToLinkedList = preProcessEval();
+                
+                processedParamValues = paramValues.map((value, index) => {
+                  // Check if this parameter needs pre-processing (array inputs)
+                  if (Array.isArray(value)) {
+                    try {
+                      console.log(`Applying pre-processing to parameter ${paramKeys[index]}`);
+                      return arrayToLinkedList(value);
+                    } catch (error) {
+                      console.error(`Error in pre-processing for ${paramKeys[index]}:`, error);
+                      return value; // Return original value if pre-processing fails
+                    }
+                  }
+                  return value;
+                });
+              } catch (error) {
+                console.error('Error extracting arrayToLinkedList function:', error);
+              }
+            }
+            
             // Get the values from the input object and pass them as separate arguments
-            result = await Promise.resolve(userFunction(...paramValues));
+            result = await Promise.resolve(userFunction(...processedParamValues));
           } else {
             // For backward compatibility, pass the input directly if it's not an object
             console.log(`Calling function with direct input: ${JSON.stringify(inputParams)}`);
-            result = await Promise.resolve(userFunction(inputParams));
+            
+            // Prepare the execution environment
+            let executionCode = code;
+            if (preProcessCode) {
+              executionCode = preProcessCode + '\n' + code;
+            }
+            
+            // Create the user function with the combined code
+            const userFunction = new Function(executionCode + '; return mergeTwoLists;')();
+            
+            // Apply pre-processing if available
+            let processedInput = inputParams;
+            if (preProcessCode && Array.isArray(inputParams)) {
+              try {
+                const preProcessEval = new Function(preProcessCode + '; return arrayToLinkedList;');
+                const arrayToLinkedList = preProcessEval();
+                console.log(`Applying pre-processing to direct input`);
+                processedInput = arrayToLinkedList(inputParams);
+              } catch (error) {
+                console.error(`Error in pre-processing for direct input:`, error);
+              }
+            }
+            result = await Promise.resolve(userFunction(processedInput));
+          }
+          
+          // Apply post-processing if available
+          if (postProcessFunction && result !== undefined) {
+            try {
+              console.log(`Applying post-processing to result`);
+              // If result is null, pass null to post-processing function instead of converting to empty array
+              // The post-processing function should handle null appropriately
+              result = postProcessFunction(result);
+            } catch (error) {
+              console.error(`Error in post-processing:`, error);
+            }
+          } else if (result === null) {
+            // If no post-processing function and result is null, convert to empty array
+            result = [];
           }
           
           console.log(`Function returned: ${JSON.stringify(result)}`);

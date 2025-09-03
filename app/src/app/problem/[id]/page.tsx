@@ -1035,8 +1035,13 @@ export default function ProblemWorkspace() {
     setConsoleLogs(['> Running tests...', '> Compiling JavaScript code...']);
     
     try {
-      // Execute the code with test cases
-      const results = await executeJavaScriptCode(code, testCases);
+      // Execute the code with test cases, passing pre-processing and post-processing code if available
+      const results = await executeJavaScriptCode(
+        code, 
+        testCases,
+        problem.preProcessCode,
+        problem.postProcessCode
+      );
       setTestResults(results);
       setShowResults(true);
       

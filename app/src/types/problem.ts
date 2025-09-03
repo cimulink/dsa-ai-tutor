@@ -15,6 +15,10 @@ export interface Problem {
   timeEstimate: string;
   companies: string[];
   topic: string;
+  // Pre-processing code to convert input arrays to custom data structures
+  preProcessCode?: string;
+  // Post-processing code to convert output from custom data structures to arrays
+  postProcessCode?: string;
 }
 
 export interface TestCase {

@@ -31,5 +31,7 @@
     "Use a dummy head to simplify the logic.",
     "Compare the values of the current nodes from both lists.",
     "Attach the smaller node to the result list and advance the corresponding pointer."
-  ]
+  ],
+  "preProcessCode": "class ListNode {\n    constructor(val, next) {\n        this.val = (val===undefined ? 0 : val);\n        this.next = (next===undefined ? null : next);\n    }\n}\n\nfunction arrayToLinkedList(arr) {\n  if (arr.length === 0) return null;\n  \n  const head = new ListNode(arr[0]);\n  let current = head;\n  \n  for (let i = 1; i < arr.length; i++) {\n    current.next = new ListNode(arr[i]);\n    current = current.next;\n  }\n  \n  return head;\n}",
+  "postProcessCode": "function linkedListToArray(head) {\n  // Handle null or empty array cases\n  if (head === null || (Array.isArray(head) && head.length === 0)) {\n    return [];\n  }\n  \n  const result = [];\n  let current = head;\n  \n  while (current !== null) {\n    result.push(current.val);\n    current = current.next;\n  }\n  \n  return result;\n}"
 }
