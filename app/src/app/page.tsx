@@ -66,8 +66,8 @@ const Header: React.FC<{ onSettingsClick: () => void; onLearnModeClick: () => vo
               Learn
             </Button>
             <Link href="/settings">
-              <Button variant="ghost" size="icon" className="h-8 w-8">
-                <Settings size={16} />
+              <Button variant="outline" className="h-8 text-sm">
+                Add OpenRouter API Key
               </Button>
             </Link>
           </div>
