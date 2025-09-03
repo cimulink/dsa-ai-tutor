@@ -779,12 +779,7 @@ const TestResults: React.FC<{
               <span className="text-sm font-medium">Performance Analysis</span>
             </div>
             <div className="grid grid-cols-2 gap-2 text-xs">
-              <div>
-                <span className="font-medium">Time Complexity:</span> {performanceAnalysis.timeComplexity}
-              </div>
-              <div>
-                <span className="font-medium">Space Complexity:</span> {performanceAnalysis.spaceComplexity}
-              </div>
+              
               <div>
                 <span className="font-medium">Avg. Execution:</span> {performanceAnalysis.averageExecutionTime}
               </div>
@@ -1222,7 +1217,7 @@ export default function ProblemWorkspace() {
 
   const handleGetHint = async () => {
     const randomHint = problem.hints[Math.floor(Math.random() * problem.hints.length)];
-    await handleSendMessage("Can you give me a hint?\n\nPlease ensure your response follows these guidelines:\n1. Use single backticks (`) for inline code highlights\n2. Use triple backticks (```) for code blocks\n3. Return all responses in proper format\n4. Be precise and concise in your explanations");
+    await handleSendMessage("Can you give me a hint?");
     
     setTimeout(async () => {
       const hintMessage: ChatMessage = {
