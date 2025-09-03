@@ -79,6 +79,50 @@ const Header: React.FC<{ onSettingsClick: () => void; onLearnModeClick: () => vo
 
 // Enhanced Welcome message component
 const WelcomeMessage: React.FC<{ userProgress: UserProgress }> = ({ userProgress }) => {
+  // Get the last worked on problem from recent activity
+  const getLastWorkedOnInfo = () => {
+    if (userProgress.recentActivity.length > 0) {
+      const lastActivity = userProgress.recentActivity[0];
+      // In a real implementation, we would fetch the problem title from S3
+      // For now, we'll just show the problem ID
+      const problemTitle = lastActivity.problemId.split('-').map(word => 
+        word.charAt(0).toUpperCase() + word.slice(1)
+      ).join(' ');
+      
+      // Calculate days ago
+      const activityDate = new Date(lastActivity.date);
+      const today = new Date();
+      const diffTime = Math.abs(today.getTime() - activityDate.getTime());
+      const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24));
+      
+      return {
+        problemTitle,
+        topic: 'Arrays', // This would come from the problem data in a real implementation
+        daysAgo: diffDays
+      };
+    }
+    return null;
+  };
+
+  // Calculate problems solved in the last 7 days
+  const getWeeklyProgress = () => {
+    const oneWeekAgo = new Date();
+    oneWeekAgo.setDate(oneWeekAgo.getDate() - 7);
+    
+    const weeklySolved = userProgress.recentActivity.filter(activity => {
+      const activityDate = new Date(activity.date);
+      return activityDate >= oneWeekAgo && activity.status === 'completed';
+    }).length;
+    
+    return {
+      solved: weeklySolved,
+      goal: 5 // This could be configurable
+    };
+  };
+
+  const lastWorkedOnInfo = getLastWorkedOnInfo();
+  const weeklyProgress = getWeeklyProgress();
+
   return (
     <div className="bg-gradient-to-r from-blue-50 via-indigo-50 to-purple-50 border-b">
       <div className="max-w-7xl mx-auto px-6 py-8">
@@ -87,13 +131,20 @@ const WelcomeMessage: React.FC<{ userProgress: UserProgress }> = ({ userProgress
             <h1 className="text-3xl font-bold text-gray-900 mb-2">
               Welcome back! Ready to level up? 🚀
             </h1>
-            <p className="text-gray-600 flex items-center">
-              <Clock size={16} className="mr-2" />
-              Last worked on: <span className="font-medium ml-1">Two Sum</span> 
-              <span className="text-muted-foreground mx-1">in</span> 
-              <span className="font-medium">Arrays</span> 
-              <span className="text-muted-foreground ml-1">• 2 days ago</span>
-            </p>
+            {lastWorkedOnInfo ? (
+              <p className="text-gray-600 flex items-center">
+                <Clock size={16} className="mr-2" />
+                Last worked on: <span className="font-medium ml-1">{lastWorkedOnInfo.problemTitle}</span> 
+                <span className="text-muted-foreground mx-1">in</span> 
+                <span className="font-medium">{lastWorkedOnInfo.topic}</span> 
+                <span className="text-muted-foreground ml-1">• {lastWorkedOnInfo.daysAgo} days ago</span>
+              </p>
+            ) : (
+              <p className="text-gray-600 flex items-center">
+                <Clock size={16} className="mr-2" />
+                Start your first problem to track your progress
+              </p>
+            )}
           </div>
           <div className="flex space-x-6">
             <div className="text-center">
@@ -101,7 +152,9 @@ const WelcomeMessage: React.FC<{ userProgress: UserProgress }> = ({ userProgress
               <div className="text-sm text-muted-foreground">Day Streak 🔥</div>
             </div>
             <div className="text-center">
-              <div className="text-2xl font-bold text-green-600">3/5</div>
+              <div className="text-2xl font-bold text-green-600">
+                {weeklyProgress.solved}/{weeklyProgress.goal}
+              </div>
               <div className="text-sm text-muted-foreground">Weekly Goal 🎯</div>
             </div>
             <div className="text-center">
