@@ -1,6 +1,6 @@
 'use client';
 
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import { useParams, useRouter } from 'next/navigation';
 import Link from 'next/link';
 import ReactMarkdown from 'react-markdown';
@@ -343,7 +343,7 @@ const ProblemDescription: React.FC<{ problem: Problem }> = ({ problem }) => {
           Problem
         </CardTitle>
       </CardHeader>
-      <CardContent className="space-y-3 overflow-y-auto max-h-[calc(100vh-200px)] pr-2">
+      <CardContent className="space-y-3 overflow-y-auto pr-2">
         {/* Title and Difficulty */}
         <div className="border-b pb-2">
           <h2 className="text-base font-bold text-gray-900 mb-1">{problem.title}</h2>
@@ -406,7 +406,7 @@ const ProblemDescription: React.FC<{ problem: Problem }> = ({ problem }) => {
         </div>
 
         {/* Companies */}
-        <div>
+        <div className="pb-2">
           <h3 className="font-semibold text-gray-900 mb-1 text-xs">Asked by:</h3>
           <div className="flex flex-wrap gap-1">
             {problem.companies.slice(0, 3).map((company, index) => (
@@ -504,8 +504,8 @@ const AIChat: React.FC<{
         </CardTitle>
       </CardHeader>
       <CardContent className="flex-1 flex flex-col p-0">
-        {/* Messages */}
-        <div className="flex-1 overflow-y-auto p-3 space-y-3 max-h-[300px]">
+        {/* Messages - Increased height allocation */}
+        <div className="flex-1 overflow-y-auto p-3 space-y-3">
           {messages.map((message) => (
             <div
               key={message.id}
@@ -628,7 +628,11 @@ const CodeEditor: React.FC<{
         </div>
       </CardHeader>
       <CardContent className="p-0">
-        <div className="border-t">
+        <div className="border-t relative">
+          {/* JavaScript indicator */}
+          <div className="absolute top-2 right-2 z-10 bg-yellow-100 text-yellow-800 text-xs px-2 py-1 rounded font-medium">
+            JavaScript
+          </div>
           <Editor
             height="calc(100vh - 250px)"
             defaultLanguage="javascript"
@@ -651,7 +655,15 @@ const CodeEditor: React.FC<{
               roundedSelection: false,
               readOnly: false,
               cursorStyle: 'line',
-              autoIndent: 'full'
+              autoIndent: 'full',
+              // Enable page scrolling when cursor is on editor
+              scrollbar: {
+                vertical: 'visible',
+                horizontal: 'visible',
+                handleMouseWheel: false, // This allows page scrolling to take precedence
+              },
+              // Allow page scrolling when editor doesn't need to scroll
+              scrollBeyondLastColumn: 0,
             }}
           />
         </div>
@@ -732,7 +744,7 @@ const TestResults: React.FC<{
             {passedTests}/{totalTests} Passed
           </Badge>
         </div>
-        <div className="space-y-2 max-h-40 overflow-y-auto">
+        <div className="space-y-2 max-h-64 overflow-y-auto">
           {results.map((result, index) => (
             <div
               key={index}
@@ -842,6 +854,9 @@ export default function ProblemWorkspace() {
   const [error, setError] = useState<string | null>(null);
   const [allTestsPassed, setAllTestsPassed] = useState(false);
   const [selectedTestCase, setSelectedTestCase] = useState<any | null>(null);
+  
+  // Ref for test results section
+  const testResultsRef = useRef<HTMLDivElement>(null);
 
   // Fetch problem data
   useEffect(() => {
@@ -1029,6 +1044,14 @@ export default function ProblemWorkspace() {
         executionTime: '0ms',
         logs: []
       }]);
+      
+      // Scroll to test results
+      setTimeout(() => {
+        if (testResultsRef.current) {
+          testResultsRef.current.scrollIntoView({ behavior: 'smooth', block: 'start' });
+        }
+      }, 100);
+      
       return;
     }
     
@@ -1105,6 +1128,14 @@ export default function ProblemWorkspace() {
         allPassed ? '> All tests passed! 🎉' : '> Some tests failed. Check the results below.'
       ];
       setConsoleLogs(prev => [...prev, ...newLogs]);
+      
+      // Scroll to test results
+      setTimeout(() => {
+        if (testResultsRef.current) {
+          testResultsRef.current.scrollIntoView({ behavior: 'smooth', block: 'start' });
+        }
+      }, 100);
+      
     } catch (error) {
       const errorMessage = error instanceof Error ? error.message : 'Unknown error during test execution';
       setConsoleLogs(prev => [...prev, `> Error: ${errorMessage}`]);
@@ -1120,6 +1151,14 @@ export default function ProblemWorkspace() {
         logs: []
       }]);
       setShowResults(true);
+      
+      // Scroll to test results
+      setTimeout(() => {
+        if (testResultsRef.current) {
+          testResultsRef.current.scrollIntoView({ behavior: 'smooth', block: 'start' });
+        }
+      }, 100);
+      
     } finally {
       setIsRunning(false);
     }
@@ -1249,7 +1288,7 @@ export default function ProblemWorkspace() {
 
       {/* Main Content - Full Width 3-Column Layout with Resizable Panels */}
       <div className="p-2 w-full">
-        <div className="h-[calc(100vh-100px)]">
+        <div className="h-[calc(100vh-80px)]">
           <ResizablePanel
             leftPanel={
               <ResizablePanel
@@ -1272,13 +1311,15 @@ export default function ProblemWorkspace() {
               />
             }
             rightPanel={
-              <AIChat
-                messages={messages}
-                onSendMessage={handleSendMessage}
-                onGetHint={handleGetHint}
-                isLoading={isAILoading}
-                onClearChat={handleClearChat}
-              />
+              <div className="h-full flex flex-col">
+                <AIChat
+                  messages={messages}
+                  onSendMessage={handleSendMessage}
+                  onGetHint={handleGetHint}
+                  isLoading={isAILoading}
+                  onClearChat={handleClearChat}
+                />
+              </div>
             }
             initialLeftWidth={800}
             minLeftWidth={600}
@@ -1287,7 +1328,7 @@ export default function ProblemWorkspace() {
         </div>
 
         {/* Bottom Section - Test Results */}
-        <div className="mt-2">
+        <div className="mt-2" ref={testResultsRef}>
           <TestResults
             results={testResults}
             isVisible={showResults}
