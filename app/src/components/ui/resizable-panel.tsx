@@ -60,10 +60,12 @@ export const ResizablePanel: React.FC<ResizablePanelProps> = ({
       className={`flex w-full h-full ${className}`}
     >
       <div 
-        className="h-full overflow-hidden"
+        className="h-full flex overflow-auto"
         style={{ width: `${leftWidth}px` }}
       >
-        {leftPanel}
+        <div className="flex-1 flex flex-col" style={{ minHeight: 0 }}>
+          {leftPanel}
+        </div>
       </div>
       
       <div 
@@ -73,8 +75,10 @@ export const ResizablePanel: React.FC<ResizablePanelProps> = ({
         <div className="w-1 h-8 bg-gray-400 rounded-full"></div>
       </div>
       
-      <div className="flex-1 h-full overflow-hidden">
-        {rightPanel}
+      <div className="flex-1 h-full flex overflow-auto">
+        <div className="flex-1 flex flex-col" style={{ minHeight: 0 }}>
+          {rightPanel}
+        </div>
       </div>
     </div>
   );
@@ -140,10 +144,12 @@ export const VerticalResizablePanel: React.FC<VerticalResizablePanelProps> = ({
       className={`flex flex-col w-full h-full ${className}`}
     >
       <div 
-        className="w-full overflow-hidden"
+        className="w-full flex overflow-auto"
         style={{ height: `${topHeight}px` }}
       >
-        {topPanel}
+        <div className="flex-1 flex flex-col" style={{ minHeight: 0 }}>
+          {topPanel}
+        </div>
       </div>
       
       <div 
@@ -153,8 +159,10 @@ export const VerticalResizablePanel: React.FC<VerticalResizablePanelProps> = ({
         <div className="w-8 h-1 bg-gray-400 rounded-full"></div>
       </div>
       
-      <div className="flex-1 w-full overflow-hidden">
-        {bottomPanel}
+      <div className="flex-1 w-full flex overflow-auto">
+        <div className="flex-1 flex flex-col" style={{ minHeight: 0 }}>
+          {bottomPanel}
+        </div>
       </div>
     </div>
   );

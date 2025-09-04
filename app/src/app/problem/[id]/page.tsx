@@ -336,14 +336,14 @@ const ProblemWorkspaceHeader: React.FC<{
 // Problem Description Component (Left Column - Compact)
 const ProblemDescription: React.FC<{ problem: Problem }> = ({ problem }) => {
   return (
-    <Card className="h-full border-0 shadow-lg bg-white">
-      <CardHeader className="pb-3">
+    <Card className="h-full border-0 shadow-lg bg-white flex flex-col">
+      <CardHeader className="pb-3 flex-shrink-0">
         <CardTitle className="flex items-center text-sm font-medium">
           <FileText className="mr-2 text-blue-600" size={16} />
           Problem
         </CardTitle>
       </CardHeader>
-      <CardContent className="space-y-3 overflow-y-auto pr-2">
+      <CardContent className="flex-1 overflow-y-auto pr-2">
         {/* Title and Difficulty */}
         <div className="border-b pb-2">
           <h2 className="text-base font-bold text-gray-900 mb-1">{problem.title}</h2>
@@ -359,14 +359,14 @@ const ProblemDescription: React.FC<{ problem: Problem }> = ({ problem }) => {
         </div>
 
         {/* Description */}
-        <div>
+        <div className="mt-3">
           <p className="text-xs text-gray-700 leading-relaxed whitespace-pre-line">
             {problem.description}
           </p>
         </div>
 
         {/* Examples */}
-        <div>
+        <div className="mt-3">
           <h3 className="font-semibold text-gray-900 mb-1 text-xs">Examples:</h3>
           <div className="space-y-2">
             {problem.examples.map((example, index) => (
@@ -393,7 +393,7 @@ const ProblemDescription: React.FC<{ problem: Problem }> = ({ problem }) => {
         </div>
 
         {/* Constraints */}
-        <div>
+        <div className="mt-3">
           <h3 className="font-semibold text-gray-900 mb-1 text-xs">Constraints:</h3>
           <ul className="space-y-1">
             {problem.constraints.map((constraint, index) => (
@@ -406,7 +406,7 @@ const ProblemDescription: React.FC<{ problem: Problem }> = ({ problem }) => {
         </div>
 
         {/* Companies */}
-        <div className="pb-2">
+        <div className="mt-3 pb-2">
           <h3 className="font-semibold text-gray-900 mb-1 text-xs">Asked by:</h3>
           <div className="flex flex-wrap gap-1">
             {problem.companies.slice(0, 3).map((company, index) => (
@@ -480,6 +480,17 @@ const AIChat: React.FC<{
   onClearChat: () => void;
 }> = ({ messages, onSendMessage, onGetHint, isLoading, onClearChat }) => {
   const [newMessage, setNewMessage] = useState('');
+  const messagesContainerRef = useRef<HTMLDivElement>(null);
+
+  // Scroll to bottom of messages when new messages are added
+  useEffect(() => {
+    if (messagesContainerRef.current) {
+      // Use requestAnimationFrame to ensure DOM is updated before scrolling
+      requestAnimationFrame(() => {
+        messagesContainerRef.current!.scrollTop = messagesContainerRef.current!.scrollHeight;
+      });
+    }
+  }, [messages, isLoading]);
 
   const handleSend = () => {
     if (newMessage.trim()) {
@@ -497,15 +508,22 @@ const AIChat: React.FC<{
 
   return (
     <Card className="h-full border-0 shadow-lg flex flex-col bg-white">
-      <CardHeader className="pb-3 flex-shrink-0">
+      <CardHeader className="pb-3 flex-shrink-0 border-b">
         <CardTitle className="flex items-center text-base">
           <Bot className="mr-2 text-purple-600" size={18} />
           AI Tutor Chat
         </CardTitle>
       </CardHeader>
       <CardContent className="flex-1 flex flex-col p-0">
-        {/* Messages - Increased height allocation */}
-        <div className="flex-1 overflow-y-auto p-3 space-y-3">
+        {/* Messages Container */}
+        <div 
+          ref={messagesContainerRef}
+          className="flex-1 overflow-y-auto p-3 space-y-3"
+          style={{ 
+            minHeight: 0,
+            maxHeight: 'calc(100vh - 200px)' // Limit the height to prevent expansion
+          }}
+        >
           {messages.map((message) => (
             <div
               key={message.id}
@@ -596,22 +614,14 @@ const CodeEditor: React.FC<{
   isRunning: boolean;
 }> = ({ code, onChange, onRun, onReset, onSubmit, onSave, onLoad, isRunning }) => {
   return (
-    <Card className="border-0 shadow-lg h-full bg-white">
-      <CardHeader className="pb-3">
+    <Card className="border-0 shadow-lg h-full bg-white flex flex-col">
+      <CardHeader className="pb-3 flex-shrink-0">
         <div className="flex items-center justify-between">
           <CardTitle className="flex items-center text-base font-medium">
             <Code2 className="mr-2 text-green-600" size={18} />
             Code Editor
           </CardTitle>
           <div className="flex space-x-2">
-            {/* <Button variant="outline" size="sm" onClick={onLoad} className="h-8 text-xs">
-              <Upload size={14} className="mr-1" />
-              Load
-            </Button> */}
-            {/* <Button variant="outline" size="sm" onClick={onSave} className="h-8 text-xs">
-              <Save size={14} className="mr-1" />
-              Save
-            </Button> */}
             <Button variant="outline" size="sm" onClick={onReset} className="h-8 text-xs">
               <RotateCcw size={14} className="mr-1" />
               Reset
@@ -620,21 +630,17 @@ const CodeEditor: React.FC<{
               <Play size={14} className="mr-1" />
               {isRunning ? 'Running...' : 'Run'}
             </Button>
-            {/* <Button size="sm" onClick={onSubmit} className="h-8 text-xs">
-              <CheckCircle2 size={14} className="mr-1" />
-              Submit
-            </Button> */}
           </div>
         </div>
       </CardHeader>
-      <CardContent className="p-0">
-        <div className="border-t relative">
+      <CardContent className="flex-1 p-0 overflow-hidden">
+        <div className="border-t relative h-full">
           {/* JavaScript indicator */}
           <div className="absolute top-2 right-2 z-10 bg-yellow-100 text-yellow-800 text-xs px-2 py-1 rounded font-medium">
             JavaScript
           </div>
           <Editor
-            height="calc(100vh - 250px)"
+            height="100%"
             defaultLanguage="javascript"
             value={code}
             onChange={(value) => onChange(value || '')}
@@ -1277,7 +1283,7 @@ export default function ProblemWorkspace() {
   };
 
   return (
-    <div className="min-h-screen bg-gray-50">
+    <div className="min-h-screen bg-gray-50 flex flex-col">
       {/* Header */}
       <ProblemWorkspaceHeader
         problem={problem}
@@ -1287,8 +1293,8 @@ export default function ProblemWorkspace() {
       />
 
       {/* Main Content - Full Width 3-Column Layout with Resizable Panels */}
-      <div className="p-2 w-full">
-        <div className="h-[calc(100vh-80px)]">
+      <div className="flex-1 flex flex-col p-2 w-full overflow-hidden">
+        <div className="flex-1 overflow-hidden">
           <ResizablePanel
             leftPanel={
               <ResizablePanel
@@ -1311,7 +1317,7 @@ export default function ProblemWorkspace() {
               />
             }
             rightPanel={
-              <div className="h-full flex flex-col">
+              <div className="h-full flex flex-col overflow-hidden">
                 <AIChat
                   messages={messages}
                   onSendMessage={handleSendMessage}
