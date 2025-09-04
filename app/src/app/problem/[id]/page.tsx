@@ -554,13 +554,13 @@ const AIChat: React.FC<{
         </div>
 
         {/* Input Area */}
-        <div className="p-3 border-t bg-gray-50 flex-shrink-0">
+        <div className="p-3 border-t bg-gray-50 flex-shrink-0 border-2 border-gray-900 rounded-b-lg">
           <div className="flex space-x-2 mb-2">
             <Button
               variant="outline"
               size="lg"
               onClick={onGetHint}
-              className="flex items-center h-7"
+              className="flex items-center h-7 border-gray-900"
             >
               <Lightbulb size={14} className="mr-1" />
               Hint
@@ -569,7 +569,7 @@ const AIChat: React.FC<{
               variant="outline"
               size="lg"
               onClick={() => onSendMessage("Can you explain this problem?")}
-              className="flex items-center h-7"
+              className="flex items-center h-7 border-gray-900"
             >
               <MessageCircle size={14} className="mr-1" />
               Explain
@@ -578,7 +578,7 @@ const AIChat: React.FC<{
               variant="outline"
               size="lg"
               onClick={onClearChat}
-              className="flex items-center h-7"
+              className="flex items-center h-7 border-gray-900"
             >
               <X size={14} className="mr-1" />
               Clear Chat
