@@ -56,9 +56,6 @@ export default function SettingsPage() {
                   <li>Create a new API key</li>
                   <li>Copy the key and paste it below</li>
                 </ol>
-                <p className="mt-1.5 text-xs text-blue-700">
-                  <strong>Tip:</strong> Start with free models like Mistral 7B or Gemma 7B for cost-effective learning.
-                </p>
               </div>
             </CardContent>
           </Card>
