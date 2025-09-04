@@ -19,7 +19,7 @@ interface OpenRouterSettingsProps {
 
 export function OpenRouterSettings({ onSettingsSaved }: OpenRouterSettingsProps) {
   const [apiKey, setApiKey] = useState('');
-  const [model, setModel] = useState('mistralai/mistral-7b-instruct');
+  const [model, setModel] = useState('deepseek/deepseek-chat-v3.1:free');
   const [isTesting, setIsTesting] = useState(false);
   const [isSaving, setIsSaving] = useState(false);
   const [connectionStatus, setConnectionStatus] = useState<'idle' | 'success' | 'error'>('idle');
